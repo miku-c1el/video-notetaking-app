@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.thumbnail {
+    width: 100%;
+    aspect-ratio: 16 / 9;  /* YouTubeの標準的なアスペクト比 */
+    object-fit: cover;     /* 画像がコンテナにフィットするように調整 */
+    border-radius: 10px 10px 0 0;
+}
