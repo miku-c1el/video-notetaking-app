@@ -11,15 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('notes', function (Blueprint $table) {
+        Schema::create('moments', function (Blueprint $table) {
             $table->increments('id');
+            $table->unsignedInteger('note_id');
             $table->string('title', 255)->nullable();
             $table->text('content')->nullable();
-            $table->integer('timestamp');
-            // $table->foreign('user_id')->references('id')->on('users');
-            // $table->foreign('video_id')->references('id')->on('videos');
-            $table->dateTime('created_at');
-            $table->dateTime('updated_at')->nullable();
+            $table->unsignedInteger('timestamp');
+            $table->datetimes();
+            $table->foreign('note_id')->references('id')->on('notes')->onUpdate('cascade')->onDelete('cascade');
         });
     }
 
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('notes');
+        Schema::dropIfExists('moments');
     }
 };

@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('username')->nullable();
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->dateTime('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
-            $table->timestamps();
+            $table->datetimes();
             $table->string('avatar_path')->nullable();
         });
     }
@@ -31,3 +31,7 @@ return new class extends Migration
         Schema::dropIfExists('users');
     }
 };
+
+
+
+

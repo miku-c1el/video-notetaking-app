@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PostsController;
 use App\Http\Controllers\VideoController;
+use App\Http\Controllers\NoteController;
 use App\Services\VideoService;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -43,23 +44,6 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-Route::get('/about', function () {
-    return "Hi, about!";
-});
-
-Route::get('/contuct', function () {
-    return "Hi, countuc!";
-});
-
-// パラメータを渡す
-Route::get('/podcast/{id}/{name}', function($id, $name){
-    return "This is podcast number " . $id . "and name: ". $name;
-});
-
-Route::get('/admin/podcast/example', array('as' => 'admin.home', function(){
-    $url = route('admin.home');
-    return "this url is ". $url;
-}));
 
 // PostControllerのindex関数という意味
 // Route::get('/post/{id}', [PostsController::class, 'index']);
@@ -130,5 +114,34 @@ Route::get('/insertUser', function(){
 |--------------------------------------------------------------------------
 */
 
-Route::get('/youtube/search', [VideoService::class, 'searchVideos']);
 Route::get('/videos', [VideoController::class, 'index'])->name('videos.index');
+
+
+// routes/web.php
+// Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
+// Route::get('/notes/{note}', [NoteController::class, 'show'])->name('notes.show');
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
+    Route::get('/notes/{noteId}', [NoteController::class, 'create'])->name('notes.create');
+});
+
+/*
+|--------------------------------------------------------------------------
+| eloquent練習
+|--------------------------------------------------------------------------
+*/
+Route::get('/notes', function(){
+    $user = User::find(1);
+    foreach($user->notes as $note){
+        echo $note->title . '<br>';
+    }
+});
+
+Route::get('/tags', function(){
+    $tags = Note::find(1)->tags()->orderBy('id', 'desc')->get();
+    return $tags;
+});
+
+// searchクエリお試し用
+Route::get('/youtube/search', [VideoService::class, 'searchVideos']);
