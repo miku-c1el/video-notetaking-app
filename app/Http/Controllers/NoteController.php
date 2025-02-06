@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Note;
+use App\Models\Moment;
 use App\Models\Video;
 use Carbon\Carbon;
 
@@ -21,10 +22,9 @@ class NoteController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request, $noteId)
+    public function create(Request $request)
     {
-        $note = Note::findOrFail($noteId);
-        return Inertia::render('Notes/Create', ['note' => $note]);
+
     }
 
     /**
@@ -48,16 +48,22 @@ class NoteController extends Controller
             'user_id' => auth()->id(),
             'youtubeVideo_id' => $video['videoId'],
         ]);
-
-        return Inertia::location(route('notes.create', ['noteId' => $note->id]));
+        return Inertia::location(route('notes.show', ['noteId' => $note->id]));
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $noteId)
     {
-        //
+        $note = Note::findOrFail($noteId);
+        $moments = Moment::where('note_id', $noteId)
+            ->orderBy('timestamp', 'asc')
+            ->get();
+        return Inertia::render('Note/Create', [
+            'note' => $note, 
+            'moments' => $moments
+        ]);
     }
 
     /**
@@ -84,5 +90,3 @@ class NoteController extends Controller
         //
     }
 }
-
-// networkを見たところ、payloadにnoteが渡されてない？そもそもgetやのにrequestってなくない？createメソッドの話

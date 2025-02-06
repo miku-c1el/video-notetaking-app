@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Tag;
 use App\Models\User;
+use App\Models\Moment;
 
 class Note extends Model
 {
@@ -21,6 +22,10 @@ class Note extends Model
     {
         return $this->belongsTo(User::class);
     }    
+
+    public function moments(){
+        return $this->hasMany(Moment::class);
+    }
 
     public function tags(){
         return $this->belongsToMany(Tag::class);

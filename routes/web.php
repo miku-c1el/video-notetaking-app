@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PostsController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\NoteController;
+use App\Http\Controllers\MomentController;
 use App\Services\VideoService;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -116,15 +117,23 @@ Route::get('/insertUser', function(){
 
 Route::get('/videos', [VideoController::class, 'index'])->name('videos.index');
 
+// note関連
+Route::middleware(['auth'])->group(function () {
+    Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
+    Route::get('/notes/{noteId}', [NoteController::class, 'show'])->name('notes.show');
+});
+
+// moment関連
+Route::middleware(['auth'])->group(function () {
+    Route::get('/moments', [MomentController::class, 'index'])->name('moments.index');
+    Route::post('/moments', [MomentController::class, 'store'])->name('moments.store');
+    Route::put('/moments/{moment}', [MomentController::class, 'update'])->name('moments.update');
+    Route::delete('/moments/{moment}', [MomentController::class, 'destroy'])->name('moments.destroy');
+});
 
 // routes/web.php
 // Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
 // Route::get('/notes/{note}', [NoteController::class, 'show'])->name('notes.show');
-
-Route::middleware(['auth'])->group(function () {
-    Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
-    Route::get('/notes/{noteId}', [NoteController::class, 'create'])->name('notes.create');
-});
 
 /*
 |--------------------------------------------------------------------------
