@@ -79,7 +79,13 @@ class NoteController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $title = trim(strip_tags($request->input('title')));
+        
+        $note = Note::findOrFail($id);
+        $note->title = $title;
+        $note->save();
+
+        return redirect()->back();
     }
 
     /**

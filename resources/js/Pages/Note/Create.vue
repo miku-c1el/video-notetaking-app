@@ -1,15 +1,18 @@
 <script setup>
 import Layout from '@/Layouts/MomentLayout.vue';
 import VideoMomentCapture from '@/Components/VideoMomentCapture.vue';
+import NoteEditModal from '@/Components/NoteEditModal.vue';
 import { ref, onMounted, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
+
 
 const props = defineProps({
     note: {
         type: Object,
         required: true
     },
-    moments: Array
+    moments: Array,
+    tags: Array
 });
 
 const getMoments = () => {
@@ -22,9 +25,20 @@ const getMoments = () => {
     });
 };
 
+const getTags = () => {
+    router.get(route('tags.index'), { 
+        note_id: props.note.id 
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+        only: ['tags']
+    });
+};
+
 const player = ref(null);
 const playerReady = ref(false);
 const lastTimestamp = ref(null);
+const isModalOpen = ref(false);
 
 const loadYouTubeAPI = () => {
     if (!window.YT) {
@@ -83,6 +97,7 @@ onMounted(() => {
 
     if (props.note.id) {
         getMoments();
+        getTags();
     }
 
     loadYouTubeAPI();
@@ -121,12 +136,28 @@ watch(() => props.note.youtubeVideo_id, () => {
                             <div class="bg-white shadow rounded-lg p-6 mt-6">
                                 <div class="flex justify-between items-center mb-4">
                                     <h2 class="text-lg font-medium text-gray-900">{{ props.note?.title }}</h2>
-                                    <button class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-md transition-colors">
+                                    <button 
+                                        @click="isModalOpen = true"
+                                        class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-md transition-colors"
+                                    >
                                         詳細編集
                                     </button>
+
+                                    <NoteEditModal
+                                        v-model="isModalOpen"
+                                        :note="note"
+                                    />
                                 </div>
+
+                                <!-- タグセクション -->
                                 <div class="flex gap-2 mt-4">
-                                    <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"># Youtube</span>
+                                    <span 
+                                        v-for="tag in tags" 
+                                        :key="tag.id"
+                                        class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                                    >
+                                        # {{ tag.name }}
+                                    </span>
                                 </div>
                             </div>
                         </div>

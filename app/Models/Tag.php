@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Note;
 
 class Tag extends Model
 {
@@ -13,4 +14,9 @@ class Tag extends Model
         'name',
         'user_id'
     ];
+
+    public function notes(): BelongsToMany
+    {
+        return $this->belongsToMany(Note::class)->withTimestamps()->withPivot('created_at');
+    }
 }

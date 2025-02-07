@@ -5,12 +5,16 @@ use App\Http\Controllers\PostsController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\MomentController;
+use App\Http\Controllers\TagController;
+use App\Http\Controllers\NoteTagController;
 use App\Services\VideoService;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Models\Note;
 use App\Models\User;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -121,6 +125,7 @@ Route::get('/videos', [VideoController::class, 'index'])->name('videos.index');
 Route::middleware(['auth'])->group(function () {
     Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
     Route::get('/notes/{noteId}', [NoteController::class, 'show'])->name('notes.show');
+    Route::patch('/notes/{note}', [NoteController::class, 'update'])->name('notes.update');
 });
 
 // moment関連
@@ -130,6 +135,18 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/moments/{moment}', [MomentController::class, 'update'])->name('moments.update');
     Route::delete('/moments/{moment}', [MomentController::class, 'destroy'])->name('moments.destroy');
 });
+
+// note tag 関連
+Route::get('/api/tags/search', [TagController::class, 'search'])->name('api.tags.search');
+Route::post('/tags', [TagController::class, 'store'])->name('tags.store');
+Route::get('/tags/index', [TagController::class, 'index'])->name('tags.index');
+Route::post('/notes/{note}/tags', [NoteTagController::class, 'store'])->name('notes.tags.store');
+Route::delete('/notes/{note}/tags/{tag}', [NoteTagController::class, 'destroy'])->name('notes.tags.destroy');
+
+
+
+
+
 
 // routes/web.php
 // Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
