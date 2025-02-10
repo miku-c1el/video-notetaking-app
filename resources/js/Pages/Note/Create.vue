@@ -4,6 +4,7 @@ import VideoMomentCapture from '@/Components/VideoMomentCapture.vue';
 import NoteEditModal from '@/Components/NoteEditModal.vue';
 import { ref, onMounted, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
+import axios from 'axios';
 
 
 const props = defineProps({
@@ -14,6 +15,12 @@ const props = defineProps({
     moments: Array,
     tags: Array
 });
+
+const player = ref(null);
+const playerReady = ref(false);
+const lastTimestamp = ref(null);
+const isModalOpen = ref(false);
+const tags = ref(props.tags || []);
 
 const getMoments = () => {
     router.get(route('moments.index'), { 
@@ -26,19 +33,15 @@ const getMoments = () => {
 };
 
 const getTags = () => {
-    router.get(route('tags.index'), { 
-        note_id: props.note.id 
-    }, {
-        preserveState: true,
-        preserveScroll: true,
-        only: ['tags']
+    axios.get(route('tags.index'), { 
+        params: {
+            note_id: props.note.id 
+        }
+    })
+    .then(response => {
+        tags.value = response.data.tags;
     });
 };
-
-const player = ref(null);
-const playerReady = ref(false);
-const lastTimestamp = ref(null);
-const isModalOpen = ref(false);
 
 const loadYouTubeAPI = () => {
     if (!window.YT) {
@@ -113,6 +116,18 @@ watch(() => props.note.youtubeVideo_id, () => {
         onYouTubeIframeAPIReady();
     }
 });
+
+watch(() => props.note.id, () => {
+    if (props.note.id) {
+        getTags();
+    }
+});
+
+const refreshTags = () => {
+    if (props.note.id) {
+        getTags();
+    }
+};
 </script>
 
 <template>
@@ -146,6 +161,8 @@ watch(() => props.note.youtubeVideo_id, () => {
                                     <NoteEditModal
                                         v-model="isModalOpen"
                                         :note="note"
+                                        :tags="tags"
+                                        @tag-updated="refreshTags"
                                     />
                                 </div>
 

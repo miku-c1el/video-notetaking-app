@@ -17,8 +17,9 @@ class TagController extends Controller
     public function index(Request $request)
     {
         $note_id = $request->get('note_id');
-        $tags = Note::find($note_id)->tags()->orderBy('created_at')->get();
-        return Inertia::render('Note/Create', [
+        $note = Note::find($note_id);
+        $tags = $note->tags()->orderBy('created_at')->get();
+        return response()->json([
             'tags' => $tags
         ]);
     }
@@ -48,6 +49,8 @@ class TagController extends Controller
             'note_id' => 'required|exists:notes,id'
         ]);
 
+        $tag = Tag::where('name', $validated['name'])->where('user_id', Auth::id())->first();
+
         $tag = Tag::create([
             'name' => $validated['name'],
             'user_id' => Auth::id()
@@ -56,7 +59,7 @@ class TagController extends Controller
         $note = Note::find($validated['note_id']);
         $note->tags()->attach($tag->id);
 
-        return redirect()->back();
+        return redirect()->back()->with('success', 'タグが追加されました');
     }
 
     /**
@@ -72,7 +75,13 @@ class TagController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $name = trim(strip_tags($request->input('name')));
+        
+        $tag = Tag::findOrFail($id);
+        $tag->name = $name;
+        $tag->save();
+
+        return redirect()->back();
     }
 
     /**
@@ -80,6 +89,7 @@ class TagController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        Tag::destroy($id);
+        return redirect()->back();
     }
 }

@@ -139,7 +139,8 @@ Route::middleware(['auth'])->group(function () {
 // note tag 関連
 Route::get('/api/tags/search', [TagController::class, 'search'])->name('api.tags.search');
 Route::post('/tags', [TagController::class, 'store'])->name('tags.store');
-Route::get('/tags/index', [TagController::class, 'index'])->name('tags.index');
+Route::get('api/tags', [TagController::class, 'index'])->name('tags.index');
+Route::patch('/api/tags/{tag}', [TagController::class, 'update'])->name('tags.update');
 Route::post('/notes/{note}/tags', [NoteTagController::class, 'store'])->name('notes.tags.store');
 Route::delete('/notes/{note}/tags/{tag}', [NoteTagController::class, 'destroy'])->name('notes.tags.destroy');
 

@@ -17,11 +17,10 @@ class MomentController extends Controller
         $moments = Moment::where('note_id', $note_id)
             ->orderBy('timestamp', 'asc')
             ->get();
-        // return Inertia::render('Note/Create', [
-        //     'moments' => $moments,
-        //     'note' => $note
-        // ]);
-        // return Inertia::location(route('notes.show', ['noteId' => $note->id]));
+        return Inertia::render('Note/Create', [
+            'moments' => $moments,
+            'note' => $note
+        ]);
     }
 
     public function store(Request $request)

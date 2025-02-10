@@ -1,33 +1,67 @@
-<!-- components/NoteEditModal.vue -->
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
+import TagEditModal from '@/Components/TagEditModal.vue';
 import { 
     TransitionRoot, 
     TransitionChild, 
     Dialog, 
     DialogPanel 
 } from '@headlessui/vue';
-import { PlusIcon } from '@heroicons/vue/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     modelValue: Boolean,
     note: {
         type: Object,
         required: true
-    }
+    },
+    tags: Array
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'tag-updated']);
 
 const title = ref(props.note?.title || '');
 const tagInput = ref('');
 const searchResults = ref([]);
 const selectedTags = ref(props.note?.tags || []);
-const showCreateTag = ref(false);
+const isSearching = ref(false);
+const showTagEditModal = ref(false);
+const selectedTagForEdit = ref(null);
 
-// タイトル自動保存のdebounce処理
+// 選択済みタグを除外した検索結果
+const filteredSearchResults = computed(() => {
+    if (!searchResults.value) return [];
+
+    const selectedTagIds = selectedTags.value.map(tag => tag.id);
+    return searchResults.value.filter(tag => !selectedTagIds.includes(tag.id));
+});
+
+// 入力されたタグが既存のタグと重複しているかチェック
+const isDuplicateTag = computed(() => {
+    if (!tagInput.value) return false;
+    
+    const normalizedInput = tagInput.value.toLowerCase().trim();
+    
+    // 検索結果内の重複をチェック
+    const isDuplicateInSearch = searchResults.value.some(tag => 
+        tag.name.toLowerCase() === normalizedInput
+    );
+    
+    // 選択済みタグ内の重複をチェック
+    const isDuplicateInSelected = selectedTags.value.some(tag =>
+        tag.name.toLowerCase() === normalizedInput
+    );
+    
+    return isDuplicateInSearch || isDuplicateInSelected;
+});
+
+// 検索結果の表示制御
+const showDropdown = computed(() => {
+    return (filteredSearchResults.value.length > 0 || (tagInput.value && !isDuplicateTag.value));
+});
+
 const debouncedSaveTitle = debounce(async (newTitle) => {
     router.patch(route('notes.update', props.note.id), 
         { title: newTitle },
@@ -39,11 +73,9 @@ const debouncedSaveTitle = debounce(async (newTitle) => {
     );
 }, 500);
 
-// タグ検索
 const searchTags = debounce(async (query) => {
     if (!query) {
         searchResults.value = [];
-        showCreateTag.value = false;
         return;
     }
 
@@ -51,14 +83,15 @@ const searchTags = debounce(async (query) => {
         const response = await fetch(route('api.tags.search', { query }));
         const data = await response.json();
         searchResults.value = data.tags;
-        showCreateTag.value = !data.tags.length && query.length > 0;
     } catch (error) {
         console.error('Error searching tags:', error);
+        searchResults.value = [];
     }
 }, 300);
 
-// タグ作成
 const createTag = async () => {
+    if (!tagInput.value || isDuplicateTag.value) return;
+    
     try {
         router.post(route('tags.store'), {
             name: tagInput.value,
@@ -68,7 +101,8 @@ const createTag = async () => {
             preserveScroll: true,
             onSuccess: () => {
                 tagInput.value = '';
-                showCreateTag.value = false;
+                isSearching.value = false;
+                emit('tag-updated');
             }
         });
     } catch (error) {
@@ -76,7 +110,21 @@ const createTag = async () => {
     }
 };
 
-// タグ選択
+const detachTag = async (tagId) => {
+    try {
+        router.delete(route('notes.tags.destroy', [props.note.id, tagId]), {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                selectedTags.value = selectedTags.value.filter(tag => tag.id !== tagId);
+                emit('tag-updated');
+            }
+        });
+    } catch (error) {
+        console.error('Error detaching tag:', error);
+    }
+};
+
 const handleTagSelect = async (tag) => {
     router.post(route('notes.tags.store', props.note.id), {
         tag_id: tag.id
@@ -86,23 +134,42 @@ const handleTagSelect = async (tag) => {
         onSuccess: () => {
             tagInput.value = '';
             searchResults.value = [];
+            isSearching.value = false;
+            emit('tag-updated');
         }
     });
 };
 
-// タグ削除
-const removeTag = async (tagId) => {
-    router.delete(route('notes.tags.destroy', [props.note.id, tagId]), {
+const editTag = async (tag) => {
+    selectedTagForEdit.value = tag;
+    showTagEditModal.value = true;
+};
+
+const handleTagUpdate = async (newName) => {
+    if (!selectedTagForEdit.value) return;
+    
+    router.patch(route('tags.update', selectedTagForEdit.value.id), {
+        name: newName
+    }, {
         preserveState: true,
-        preserveScroll: true
+        preserveScroll: true,
+        onSuccess: () => {
+            showTagEditModal.value = false;
+            selectedTagForEdit.value = null;
+            emit('tag-updated');
+        }
     });
+};
+
+const closeTagEditModal = () => {
+    showTagEditModal.value = false;
+    selectedTagForEdit.value = null;
 };
 
 watch(tagInput, (newValue) => {
     searchTags(newValue);
 });
 
-// モーダルを閉じる
 const closeModal = () => {
     emit('update:modelValue', false);
 };
@@ -110,7 +177,7 @@ const closeModal = () => {
 
 <template>
     <TransitionRoot appear :show="modelValue" as="template">
-        <Dialog as="div" @close="closeModal" class="relative z-50"> <!-- z-indexを上げる -->
+        <Dialog as="div" @close="closeModal" class="relative z-50">
             <TransitionChild
                 as="template"
                 enter="duration-300 ease-out"
@@ -134,7 +201,7 @@ const closeModal = () => {
                         leave-from="opacity-100 scale-100"
                         leave-to="opacity-0 scale-95"
                     >
-                        <DialogPanel class="w-full max-w-md transform bg-white p-6 shadow-xl transition-all rounded-2xl relative"> <!-- relativeを追加 -->
+                        <DialogPanel class="w-full max-w-md transform bg-white p-6 shadow-xl transition-all rounded-2xl">
                             <div class="space-y-4">
                                 <!-- タイトル編集 -->
                                 <div>
@@ -143,7 +210,7 @@ const closeModal = () => {
                                         type="text"
                                         v-model="title"
                                         @input="debouncedSaveTitle(title)"
-                                        placeholder="現在の名前"
+                                        placeholder="ノート名を入力"
                                         class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                                     >
                                 </div>
@@ -151,46 +218,73 @@ const closeModal = () => {
                                 <!-- タグ編集 -->
                                 <div>
                                     <h4 class="text-sm font-medium mb-2">タグ</h4>
-                                    <div class="flex flex-wrap gap-2 mb-2">
-                                        <span
-                                            v-for="tag in selectedTags"
+                                    <!-- 既存のタグ表示 -->
+                                    <div v-if="tags.length > 0" class="mb-3 flex flex-wrap gap-2">
+                                        <div
+                                            v-for="tag in tags"
                                             :key="tag.id"
                                             class="bg-gray-100 px-2 py-1 rounded-md text-sm flex items-center gap-1"
                                         >
-                                            #{{ tag.name }}
+                                            {{ tag.name }}
                                             <button
-                                                @click="removeTag(tag.id)"
-                                                class="text-gray-500 hover:text-gray-700"
+                                                @click="detachTag(tag.id)"
+                                                class="text-gray-500 hover:text-gray-700 ml-1"
                                             >
                                                 ×
                                             </button>
-                                        </span>
+                                        </div>
                                     </div>
-
+                                    <!-- タグ入力フィールド -->
                                     <div class="relative">
                                         <input
                                             type="text"
                                             v-model="tagInput"
-                                            placeholder="検索、もしくは追加"
+                                            placeholder="タグを追加"
                                             class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                                         >
-
-                                        <!-- ドロップダウンのスタイリングを修正 -->
+                                        <!-- 検索結果ドロップダウン -->
                                         <div
-                                            v-if="searchResults.length > 0 || showCreateTag"
+                                            v-if="tagInput && showDropdown"
                                             class="absolute left-0 right-0 mt-1 bg-white border rounded-md shadow-lg z-50 max-h-60 overflow-y-auto"
-                                            style="min-width: 100%"
                                         >
+                                            <div v-if="filteredSearchResults.length > 0">
+                                                <div
+                                                    v-for="tag in filteredSearchResults"
+                                                    :key="tag.id"
+                                                    class="px-4 py-2 hover:bg-gray-50 flex items-center justify-between group"
+                                                >
+                                                    <button
+                                                        @click="handleTagSelect(tag)"
+                                                        class="flex-1 text-left"
+                                                    >
+                                                        #{{ tag.name }}
+                                                    </button>
+                                                    <div class="hidden group-hover:flex items-center gap-2">
+                                                        <button
+                                                            @click="editTag(tag)"
+                                                            class="text-gray-500 hover:text-gray-700"
+                                                        >
+                                                            <PencilIcon class="w-4 h-4" />
+                                                        </button>
+                                                            <!-- タグ編集モーダル - selectedTagForEditが存在する場合のみ表示 -->
+                                                        <TagEditModal
+                                                            v-if="selectedTagForEdit"
+                                                            v-model="showTagEditModal"
+                                                            :tag="selectedTagForEdit"
+                                                            @save="handleTagUpdate"
+                                                            @update:modelValue="closeTagEditModal"
+                                                        />
+                                                        <button
+                                                            @click="detachTag(tag.id)"
+                                                            class="text-gray-500 hover:text-gray-700"
+                                                        >
+                                                            <TrashIcon class="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             <button
-                                                v-for="tag in searchResults"
-                                                :key="tag.id"
-                                                @click="handleTagSelect(tag)"
-                                                class="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center"
-                                            >
-                                                #{{ tag.name }}
-                                            </button>
-                                            <button
-                                                v-if="showCreateTag"
+                                                v-if="!isDuplicateTag"
                                                 @click="createTag"
                                                 class="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
                                             >
@@ -209,13 +303,11 @@ const closeModal = () => {
     </TransitionRoot>
 </template>
 
-<style>
-/* オーバーレイのz-indexを確実に最前面にする */
+<style scoped>
 .fixed {
     z-index: 50;
 }
 
-/* ドロップダウンメニューが他の要素の下に隠れないようにする */
 .relative {
     z-index: 51;
 }
