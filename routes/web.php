@@ -7,6 +7,7 @@ use App\Http\Controllers\NoteController;
 use App\Http\Controllers\MomentController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\NoteTagController;
+use App\Http\Controllers\Api\NoteApiController;
 use App\Services\VideoService;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -123,9 +124,15 @@ Route::get('/videos', [VideoController::class, 'index'])->name('videos.index');
 
 // note関連
 Route::middleware(['auth'])->group(function () {
+    Route::get('/notes/index', [NoteController::class, 'index'])->name('notes.index');
     Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
     Route::get('/notes/{noteId}', [NoteController::class, 'show'])->name('notes.show');
     Route::patch('/notes/{note}', [NoteController::class, 'update'])->name('notes.update');
+    Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/notes', [NoteApiController::class, 'index']);
 });
 
 // moment関連

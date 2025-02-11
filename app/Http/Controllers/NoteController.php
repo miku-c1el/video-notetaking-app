@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\Note;
 use App\Models\Moment;
 use App\Models\Video;
+use App\Models\Tag;
 use Carbon\Carbon;
 
 class NoteController extends Controller
@@ -14,9 +15,32 @@ class NoteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $query = Note::query()->where('user_id', auth()->id());
+
+        if ($request->has('tag')) {
+            $query->whereHas('tags', function ($q) use ($request) {
+                $q->where('name', $request->tag);
+            });
+        }
+
+        $sort = $request->input('sort', 'created_at');
+        $direction = $request->input('direction', 'desc');
+        $query->orderBy($sort, $direction);
+
+        $initialNotes = $query->with('tags')
+        ->limit(12)
+        ->get();
+
+        $tags = Tag::all();
+
+        return Inertia::render('Note/Index', [
+            'initialNotes' => $initialNotes,
+            'filters' => $request->only(['tag', 'sort', 'direction']),
+            'tags' => $tags
+        ]);
+
     }
 
     /**
@@ -80,7 +104,7 @@ class NoteController extends Controller
     public function update(Request $request, string $id)
     {
         $title = trim(strip_tags($request->input('title')));
-        
+
         $note = Note::findOrFail($id);
         $note->title = $title;
         $note->save();
@@ -93,6 +117,8 @@ class NoteController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $this->authorize('delete', $note);
+        $note->delete();
+        return redirect()->back();
     }
 }
