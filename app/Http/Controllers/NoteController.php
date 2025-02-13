@@ -9,15 +9,65 @@ use App\Models\Moment;
 use App\Models\Video;
 use App\Models\Tag;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class NoteController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+    // NoteController.php
     public function index(Request $request)
     {
-        $query = Note::query()->where('user_id', auth()->id());
+        // このリクエストにはtag, sort, directionのパラメータが含まれているという想定だが、初期の状態ではパラメータは含まれていないので、コード減らせそう
+        $query = Note::query();
+        if ($request->input('tab') === 'my-notes') {
+            $query->where('user_id', auth()->id());
+        }
+
+        if ($request->has('tags') && !empty($request->tags)) {
+            $query->whereHas('tags', function ($q) use ($request) {
+                $q->whereIn('tags.id', $request->tags);
+            });
+        }
+
+        $sort = $request->input('sort', 'created_at');
+        $direction = $request->input('direction', 'desc');
+        $query->orderBy($sort, $direction);
+    
+        $initialNotes = $query->with('tags')
+            ->latest()
+            ->limit(12)
+            ->get()
+            ->map(function ($note) {
+                return [
+                    'id' => $note->id,
+                    'title' => $note->title,
+                    'thumbnail' => $note->thumbnail,
+                    'created_at' => $note->created_at,
+                    'tags' => $note->tags,
+                    'user_id' => $note->user_id 
+                ];
+            });
+    
+        // このタグ必要？？？？
+        $tags = Tag::where('user_id', auth()->id())
+                ->get();
+    
+        return Inertia::render('Note/Index', [
+            'initialNotes' => $initialNotes,
+            'filters' => $request->only(['tag', 'sort', 'direction']),
+            'tags' => $tags
+        ]);
+    }
+
+    public function apiIndex(Request $request)
+    {
+        $query = Note::query();
+        
+        if ($request->input('tab') === 'my-notes') {
+            $query->where('user_id', auth()->id());
+        }
 
         if ($request->has('tag')) {
             $query->whereHas('tags', function ($q) use ($request) {
@@ -29,19 +79,22 @@ class NoteController extends Controller
         $direction = $request->input('direction', 'desc');
         $query->orderBy($sort, $direction);
 
-        $initialNotes = $query->with('tags')
-        ->limit(12)
-        ->get();
-
-        $tags = Tag::all();
-
-        return Inertia::render('Note/Index', [
-            'initialNotes' => $initialNotes,
-            'filters' => $request->only(['tag', 'sort', 'direction']),
-            'tags' => $tags
-        ]);
-
+        return response()->json(
+            $query->with('tags')
+                ->paginate(12)
+                ->through(function ($note) {
+                    return [
+                        'id' => $note->id,
+                        'title' => $note->title,
+                        'created_at' => $note->created_at,
+                        'tags' => $note->tags,
+                        'user_id' => $note->user_id
+                    ];
+                })
+        );
     }
+
+
 
     /**
      * Show the form for creating a new resource.
@@ -71,6 +124,7 @@ class NoteController extends Controller
             'title' => $video['title'],
             'user_id' => auth()->id(),
             'youtubeVideo_id' => $video['videoId'],
+            'thumbnail' => $video['thumbnail'],
         ]);
         return Inertia::location(route('notes.show', ['noteId' => $note->id]));
     }

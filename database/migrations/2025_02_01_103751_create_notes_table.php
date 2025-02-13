@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('title', 255)->nullable();
             $table->unsignedBigInteger('user_id');
             $table->string('youtubeVideo_id', 255);
+            $table->string('thumbnail', 255);
             $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
             $table->foreign('youtubeVideo_id')->references('youtubeVideo_id')->on('videos')->onUpdate('cascade');
             $table->datetimes();

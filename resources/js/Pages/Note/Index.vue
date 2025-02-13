@@ -1,26 +1,27 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useForm } from '@inertiajs/vue3';
+import { useForm, router } from '@inertiajs/vue3';
 import Modal from '@/Components/Modal.vue';
+import TagFilterModal from '@/Components/TagFilterModal.vue';
 
 const props = defineProps({
   initialNotes: Array,
-  filters: Object,
+  filters: Object, //['すべてのtag', '', 'direction']
   tags: Array,
 });
-
+console.log(props.filters);
 const notes = ref(props.initialNotes || []);
 const activeTab = ref('my-notes');
 const page = ref(1);
 const isLoading = ref(false);
 const showCreateModal = ref(false);
 const loadingElement = ref(null);
+const showFilterModal = ref(false);
+const selectedTags = ref(props.filters?.tags || []);
 
+// ※ 書き直し必要
 const displayedNotes = computed(() => {
   return notes.value.filter(note => {
-    if (activeTab.value === 'my-notes') {
-      return note.user_id === props.auth?.user?.id;
-    }
     return true;
   });
 });
@@ -37,6 +38,14 @@ const formatTimeAgo = (date) => {
   if (diffDays < 30) return `${Math.floor(diffDays / 7)}週間前`;
   if (diffDays < 365) return `${Math.floor(diffDays / 30)}ヶ月前`;
   return `${Math.floor(diffDays / 365)}年前`;
+};
+
+// タブ切り替え用の関数を追加
+const switchTab = async (newTab) => {
+  activeTab.value = newTab;
+  notes.value = [];  // ノートをリセット
+  page.value = 1;    // ページをリセット
+  await loadMoreNotes(); // 新しいデータを取得
 };
 
 // Infinite Scroll
@@ -114,6 +123,12 @@ const deleteNote = (id) => {
   }
 };
 
+const showNote = (note) => {
+  router.get(route('notes.show', note.id), 
+        {noteId: note.id}
+    );
+};
+
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString('ja-JP');
 };
@@ -121,7 +136,7 @@ const formatDate = (date) => {
 
 <template>
     <div class="min-h-screen bg-gray-50">
-      <!-- ヘッダー -->
+        <!-- ヘッダー -->
         <header class="bg-white shadow-sm">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center h-16">
@@ -129,7 +144,7 @@ const formatDate = (date) => {
                         <img src="/path-to-your-logo.png" alt="Logo" class="h-8 w-auto" />
                         <h1 class="ml-3 text-xl font-semibold">Inspod</h1>
                     </div>
-                    <button @click="showCreateModal = true" class="bg-orange-300 hover:bg-orange-400 text-white px-4 py-2 rounded-full flex items-center">
+                    <button @click="showCreateModal = true" class="bg-orange-300 hover:bg-orange-400 text-black px-4 py-2 rounded-full flex items-center">
                     <span class="mr-2">+</span>
                     ノートの新規追加
                     </button>
@@ -143,7 +158,7 @@ const formatDate = (date) => {
             <div class="border-b border-gray-200 mb-6">
                 <nav class="-mb-px flex space-x-8">
                     <button
-                    @click="activeTab = 'explore'"
+                    @click="switchTab('explore')"
                     :class="[
                         activeTab === 'explore'
                         ? 'border-orange-400 text-orange-400'
@@ -154,7 +169,7 @@ const formatDate = (date) => {
                     エクスプロア
                     </button>
                     <button
-                    @click="activeTab = 'my-notes'"
+                    @click="switchTab('my-notes')"
                     :class="[
                         activeTab === 'my-notes'
                         ? 'border-orange-400 text-orange-400'
@@ -171,90 +186,119 @@ const formatDate = (date) => {
             <div>
                 <div class="flex justify-between items-center mb-4">
                     <div class="text-sm text-gray-500">{{ displayedNotes.length }} 項目</div>
-                        <div class="flex items-center space-x-4">
-                            <button class="text-gray-600 flex items-center">
-                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
-                                </svg>
-                                フィルタ
-                            </button>
-                            <button class="text-gray-600 flex items-center">
-                                最後に開いた
-                            </button>
-                        </div>
+                    <div class="flex items-center space-x-4">
+                        <button 
+                          @click="showFilterModal = true" 
+                          class="text-gray-600 flex items-center">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                            </svg>
+                            フィルタ
+                        </button>
+                        <TagFilterModal
+                          :is-open="showFilterModal"
+                          :initial-selected-tags="selectedTags"
+                          :available-tags="tags"
+                          @close="showFilterModal = false"
+                          @update:selected-tags="selectedTags = $event"
+                        />
+
+                        <button class="text-gray-600 flex items-center">
+                            最後に開いた
+                        </button>
                     </div>
-    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div
-                        v-for="note in displayedNotes"
-                        :key="note.id"
-                        class="bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow"
+                </div>
+  
+                <div class="transition-opacity duration-300">
+                    <div v-if="displayedNotes.length"
+                        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                        <div 
+                            v-for="note in displayedNotes"
+                            :key="note.id"
+                            @click="showNote(note)"
+                            class="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
                         >
-                        <!-- サムネイル画像 -->
-                        <div class="relative pb-[56.25%] bg-gray-100">
-                            <img
-                            :src="note.thumbnail || '/path-to-default-thumbnail.jpg'"
-                            :alt="note.title"
-                            class="absolute inset-0 w-full h-full object-cover"
-                            />
-                    </div>
-    
-                        <!-- ノート情報 -->
-                        <div class="p-4">
-                            <div class="flex justify-between items-start">
-                                <h3 class="text-lg font-medium text-gray-900 mb-1">{{ note.title }}</h3>
-                                <button class="text-gray-400 hover:text-gray-600">
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                                    </svg>
-                                </button>
-                            </div>
-    
-                            <div class="text-sm text-gray-500 mb-2">
-                            {{ formatTimeAgo(note.created_at) }}
-                            </div>
-    
-                            <!-- タイムスタンプタグ -->
-                            <div class="flex flex-wrap gap-2 mb-2">
-                                <span
-                                    v-for="timestamp in note.timestamps"
-                                    :key="timestamp"
-                                    class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-gray-100 text-gray-600"
+                            <!-- サムネイル -->
+                            <div class="relative aspect-video overflow-hidden">
+                                <img 
+                                    :src="note.thumbnail" 
+                                    :alt="note.title"
+                                    class="w-full h-full object-cover"
                                 >
-                                    {{ timestamp }}
-                                </span>
+                                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200"></div>
                             </div>
-    
-                            <!-- いいねボタン -->
-                            <div class="flex items-center justify-between mt-2">
-                                <button
-                                    class="inline-flex items-center text-orange-400 hover:text-orange-500"
-                                >
-                                    <span class="mr-1">+</span>
-                                    <span class="text-sm">{{ note.likes || 0 }}</span>
-                                </button>
-                            <div class="text-sm text-gray-500">
-                                {{ note.comments ? '評価' : '' }}
+                            <div class="p-4">
+                                <!-- ノート情報 -->
+                                <div class="flex justify-between items-start">
+                                    <h3 class="text-md font-medium text-gray-900 mb-1">{{ note.title }}</h3>
+                                    <button class="text-gray-400 hover:text-gray-600">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                                        </svg>
+                                    </button>
+                                </div>
+        
+                                <div class="text-sm text-gray-500 mb-2">
+                                {{ formatTimeAgo(note.created_at) }}
+                                </div>
+        
+                                <!-- タイムスタンプタグ -->
+                                <div class="flex flex-wrap gap-2 mb-2">
+                                    <span
+                                        v-for="timestamp in note.timestamps"
+                                        :key="timestamp"
+                                        class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-gray-100 text-gray-600"
+                                    >
+                                        {{ timestamp }}
+                                    </span>
+                                </div>
+        
+                                <!-- 関連タグ一覧 -->
+                                <div v-if="note.tags.length > 0" class="mb-3 flex flex-wrap gap-2">
+                                    <div
+                                        v-for="tag in note.tags"
+                                        :key="tag.id"
+                                        class="bg-gray-100 px-2 py-1 rounded-md text-sm flex items-center gap-1"
+                                    >
+                                      # {{ tag.name }}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                </div>
-    
-            <!-- ローディングインジケーター -->
-                <div
-                    v-if="isLoading"
-                    class="flex justify-center items-center py-4"
-                    ref="loadingElement"
-                >
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
+                
+                    <div v-else class="text-center py-12">
+                        <div class="text-gray-400 mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                            </svg>
+                        </div>
+                        <p class="text-gray-600 text-lg">まだノートがありません</p>
+                        <p class="text-gray-400 mt-1">右上のノート作成ボタンからノートを作成してください</p>
+                    </div>
                 </div>
             </div>
+                
+            <!-- ローディングインジケーター -->
+            <div
+                v-if="isLoading"
+                class="flex justify-center items-center py-4"
+                ref="loadingElement"
+            >
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
+            </div>
         </div>
+    
   
         <!-- 新規ノート作成モーダル -->
-        <Modal v-if="showCreateModal" @close="showCreateModal = false">
+        <!-- <Modal v-if="showCreateModal" @close="showCreateModal = false"> -->
         <!-- モーダルの内容は前回と同じ -->
-        </Modal>
+        <!-- </Modal> -->
     </div>
 </template>
+
+<style scoped>
+.aspect-video {
+    aspect-ratio: 16 / 9;
+}
+</style>

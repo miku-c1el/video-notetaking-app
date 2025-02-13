@@ -15,7 +15,8 @@ class Note extends Model
     protected $fillable = [
         'title',
         'user_id',
-        'youtubeVideo_id'
+        'youtubeVideo_id',
+        'thumbnail',
     ];
 
     public function user()
