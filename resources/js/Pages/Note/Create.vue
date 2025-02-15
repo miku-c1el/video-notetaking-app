@@ -6,7 +6,6 @@ import { ref, onMounted, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
 
-
 const props = defineProps({
     note: {
         type: Object,
@@ -54,7 +53,7 @@ const loadYouTubeAPI = () => {
 
 const onYouTubeIframeAPIReady = () => {
     if (!props.note.youtubeVideo_id) return;
-    
+
     player.value = new YT.Player(`youtube-player-${props.note.youtubeVideo_id}`, {
         height: '100%',
         width: '100%',
@@ -69,7 +68,7 @@ const onYouTubeIframeAPIReady = () => {
         }
     });
 };
-    
+
 const getCurrentTime = () => {
     if (playerReady.value && player.value) {
         return player.value.getCurrentTime();
@@ -132,57 +131,52 @@ const refreshTags = () => {
 
 <template>
     <Layout>
-        <div class="h-screen overflow-hidden"> <!-- 全体を画面の高さに固定 -->
-            <div class="flex h-full"> <!-- flexコンテナを高さいっぱいに -->
-                <!-- メインコンテンツ（固定） -->
-                <div class="w-[60%]"> <!-- 幅を60%に増やし、paddingを削除 -->
-                    <div class="h-full flex flex-col">
-                        <!-- 固定コンテンツ用のコンテナ -->
-                        <div class="p-8 flex-shrink-0">
-                            <!-- ビデオプレイヤー -->
-                            <div class="aspect-video bg-gray-900 rounded-lg overflow-hidden">
-                                <div 
-                                    :id="`youtube-player-${props.note.youtubeVideo_id}`"
-                                    class="w-full h-full"
-                                ></div>
-                            </div>
-                            
-                            <!-- タイトルセクション -->
-                            <div class="bg-white shadow rounded-lg p-6 mt-6">
-                                <div class="flex justify-between items-center mb-4">
-                                    <h2 class="text-lg font-medium text-gray-900">{{ props.note?.title }}</h2>
-                                    <button 
-                                        @click="isModalOpen = true"
-                                        class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-md transition-colors"
-                                    >
-                                        詳細編集
-                                    </button>
+        <div class="h-full">
+            <div class="flex h-full flex-col lg:flex-row"> <!-- スマートフォンで縦並び、PCで横並び -->
+                <!-- メインコンテンツ -->
+                <div class="w-full lg:w-[60%] h-full flex flex-col"> 
+                    <!-- 動画プレイヤーセクション -->
+                    <div class="w-full h-[40vh] lg:h-[50vh] xl:h-[60vh]"> <!-- 高さを画面の比率で設定 -->
+                        <div 
+                            :id="`youtube-player-${props.note.youtubeVideo_id}`"
+                            class="w-full h-full"
+                        ></div>
+                    </div>
+                    
+                    <!-- タイトルセクション -->
+                    <div class="bg-white p-4 lg:p-6 flex-shrink-0">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                            <h2 class="text-lg font-medium text-gray-900">{{ props.note?.title }}</h2>
+                            <button 
+                                @click="isModalOpen = true"
+                                class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-md transition-colors"
+                            >
+                                詳細編集
+                            </button>
+                        </div>
 
-                                    <NoteEditModal
-                                        v-model="isModalOpen"
-                                        :note="note"
-                                        :tags="tags"
-                                        @tag-updated="refreshTags"
-                                    />
-                                </div>
+                        <NoteEditModal
+                            v-model="isModalOpen"
+                            :note="note"
+                            :tags="tags"
+                            @tag-updated="refreshTags"
+                        />
 
-                                <!-- タグセクション -->
-                                <div class="flex gap-2 mt-4">
-                                    <span 
-                                        v-for="tag in tags" 
-                                        :key="tag.id"
-                                        class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
-                                    >
-                                        # {{ tag.name }}
-                                    </span>
-                                </div>
-                            </div>
+                        <!-- タグセクション -->
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            <span 
+                                v-for="tag in tags" 
+                                :key="tag.id"
+                                class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                            >
+                                # {{ tag.name }}
+                            </span>
                         </div>
                     </div>
                 </div>
 
                 <!-- ノートセクション -->
-                <div class="w-[40%]"> <!-- 幅を40%に調整 -->
+                <div class="w-full lg:w-[40%] h-[50vh] lg:h-full"> <!-- モバイルでの高さ制限を追加 -->
                     <VideoMomentCapture 
                         v-if="note.id"
                         :noteId="note.id"
@@ -195,3 +189,6 @@ const refreshTags = () => {
         </div>
     </Layout>
 </template>
+
+
+

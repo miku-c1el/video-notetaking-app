@@ -1,7 +1,7 @@
 <template>
-    <div>
-        <nav class="bg-gray-800 text-white p-4">
-            <div class="container mx-auto flex justify-between">
+    <div class="h-screen flex flex-col overflow-hidden">
+        <nav class="bg-gray-800 text-white p-4 w-full flex-shrink-0">
+            <div class="flex justify-between items-center">
                 <a href="/notes/index" class="text-lg font-bold">MyApp</a>
                 <div>
                     <a href="/videos" class="px-4">動画検索</a>
@@ -9,7 +9,7 @@
             </div>
         </nav>
 
-        <main class="container mt-6">
+        <main class="flex-1 overflow-hidden">
             <slot />
         </main>
     </div>

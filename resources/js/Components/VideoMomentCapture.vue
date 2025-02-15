@@ -95,24 +95,28 @@ const jumpToTimestamp = (timestamp) => {
 
 <template>
   <div class="h-screen border-l border-gray-200">
-    <div class="h-full bg-gray-50 p-6">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-lg font-semibold">モーメント ({{ moments.length }})</h2>
-        <button
-          @click="createMoment"
-          class="px-4 py-2 bg-coral-500 text-black rounded-md hover:bg-coral-600"
-        >
-          モーメントをキャプチャ
-        </button>
+    <div class="h-full bg-gray-50 flex flex-col">
+      <!-- Fixed header section -->
+      <div class="p-6 pb-4 bg-gray-50">
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-semibold">モーメント ({{ moments.length }})</h2>
+          <button
+            @click="createMoment"
+            class="px-4 py-2 bg-coral-500 text-black rounded-md hover:bg-coral-600"
+          >
+            モーメントをキャプチャ
+          </button>
+        </div>
       </div>
-      
-      <div class="space-y-4 overflow-y-auto h-[calc(100vh-100px)]">
-        <div v-if="moments">
+
+      <!-- Scrollable content section -->
+      <div class="flex-1 overflow-y-auto px-6 pb-10">
+        <template v-if="moments.length > 0">
           <Card 
             v-for="moment in moments" 
             :key="moment.id" 
             :id="'moment-' + moment.id"
-            class="p-4 bg-white"
+            class="p-4 mb-4 bg-white"
           >
             <div class="flex justify-between items-start mb-2">
               <button
@@ -145,10 +149,10 @@ const jumpToTimestamp = (timestamp) => {
               ></textarea>
             </div>
           </Card>
-        </div>
-        <div v-else class="text-center py-12">
-          <!-- モーメントがないことを伝えるコメントを挿入する -->
-          <p></p>
+          <div class="pb-6"></div>
+        </template>
+        <div v-else class="flex items-center justify-center h-[calc(100%-2rem)]">
+          <p class="text-gray-500">まだモーメントがありません。</p>
         </div>
       </div>
     </div>
