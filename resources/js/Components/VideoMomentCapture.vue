@@ -3,6 +3,7 @@ import { router } from '@inertiajs/vue3';
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { Trash2 } from 'lucide-vue-next';
 import { Card } from '@/Components/card';
+import { Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
 import axios from 'axios';
 
 const props = defineProps({
@@ -18,10 +19,19 @@ const moments = ref(props.moments.map(moment => ({
 })));
 
 const title = ref('');
+const showDuplicateAlert = ref(false);
+const showDeleteConfirm = ref(false);
+const momentToDelete = ref(null);
 
 const createMoment = async () => {
   const currentTime = props.getCurrentTime();
   props.player.pauseVideo();
+
+  if (existsMoment(currentTime)) {
+      showDuplicateWarning();
+      return;
+    }
+
 
   try {
     const response = await axios.post(route('moments.store'), {
@@ -51,6 +61,20 @@ const createMoment = async () => {
   }
 };
 
+// 取得したモーメントがすでに存在するか確認
+const existsMoment = (currentTime) => {
+  return moments.value.some(moment => moment.timestamp === Math.round(currentTime));
+};
+
+// 重複アラート表示の処理
+const showDuplicateWarning = () => {
+  showDuplicateAlert.value = true;
+  setTimeout(() => {
+    showDuplicateAlert.value = false;
+  }, 3000);
+};
+
+// モーメントのデバウンス処理
 let updateTimeout;
 const updateMoment = async (moment) => {
   if (updateTimeout) {
@@ -69,14 +93,25 @@ const updateMoment = async (moment) => {
   }, 1000);
 };
 
-const deleteMoment = async (momentId) => {
-  if (confirm('このモーメントを削除してもよろしいですか？')) {
-    try {
-      await axios.delete(route('moments.destroy', momentId));
-      moments.value = moments.value.filter(moment => moment.id !== momentId);
-    } catch (error) {
-      console.error('Failed to delete moment:', error);
-    }
+// 削除関連の処理
+const confirmDelete = (moment) => {
+  momentToDelete.value = moment;
+  showDeleteConfirm.value = true;
+};
+
+const cancelDelete = () => {
+  showDeleteConfirm.value = false;
+  momentToDelete.value = null;
+};
+
+const handleDelete = async () => {
+  try {
+    await axios.delete(route('moments.destroy', momentToDelete.value.id));
+    moments.value = moments.value.filter(moment => moment.id !== momentToDelete.value.id);
+    showDeleteConfirm.value = false;
+    momentToDelete.value = null;
+  } catch (error) {
+    console.error('Failed to delete moment:', error);
   }
 };
 
@@ -94,9 +129,58 @@ const jumpToTimestamp = (timestamp) => {
 </script>
 
 <template>
-  <div class="h-screen border-l border-gray-200">
+  <div class="h-full border-l border-gray-200">
     <div class="h-full bg-gray-50 flex flex-col">
-      <!-- Fixed header section -->
+      <!-- 重複アラート -->
+      <div
+        v-if="showDuplicateAlert"
+        class="fixed top-4 right-4 z-50 animate-in fade-in slide-in-from-top duration-300"
+      >
+        <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4 shadow-lg">
+          <p class="text-yellow-800">
+            このタイムスタンプにはすでにモーメントが存在します
+          </p>
+        </div>
+      </div>
+
+      <!-- 削除確認モーダル -->
+      <Dialog
+        :open="showDeleteConfirm"
+        @close="cancelDelete"
+        class="relative z-60"
+      >
+        <div class="fixed inset-0">
+          <div class="fixed inset-0 bg-black/30" aria-hidden="true" />
+          
+          <div class="fixed inset-0 flex items-center justify-center p-4">
+            <DialogPanel class="w-full max-w-sm rounded bg-white p-6 shadow-xl">
+              <DialogTitle class="text-lg font-medium mb-4">
+                モーメントの削除
+              </DialogTitle>
+              
+              <p class="mb-4">
+                このモーメントを削除してもよろしいですか？
+              </p>
+              
+              <div class="flex justify-end gap-3">
+                <button
+                  @click="cancelDelete"
+                  class="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  キャンセル
+                </button>
+                <button
+                  @click="handleDelete"
+                  class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                >
+                  削除
+                </button>
+              </div>
+            </DialogPanel>
+          </div>
+        </div>
+      </Dialog>
+
       <div class="p-6 pb-4 bg-gray-50">
         <div class="flex justify-between items-center">
           <h2 class="text-lg font-semibold">モーメント ({{ moments.length }})</h2>
@@ -109,8 +193,8 @@ const jumpToTimestamp = (timestamp) => {
         </div>
       </div>
 
-      <!-- Scrollable content section -->
-      <div class="flex-1 overflow-y-auto px-6 pb-10">
+      <!-- モーメント一覧 -->
+      <div class="flex-1 overflow-y-auto px-6 h-0">
         <template v-if="moments.length > 0">
           <Card 
             v-for="moment in moments" 
@@ -126,7 +210,7 @@ const jumpToTimestamp = (timestamp) => {
                 {{ formatTimestamp(moment.timestamp) }}
               </button>
               <button
-                @click="deleteMoment(moment.id)"
+                @click="confirmDelete(moment)"
                 class="p-1 hover:text-red-500 transition-colors"
               >
                 <Trash2 class="w-4 h-4" />
@@ -163,6 +247,24 @@ const jumpToTimestamp = (timestamp) => {
 textarea {
   font-family: inherit;
   line-height: 1.5;
+}
+
+.animate-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.slide-in-from-top {
+  animation: slideInFromTop 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInFromTop {
+  from { transform: translateY(-1rem); }
+  to { transform: translateY(0); }
 }
 </style>
 

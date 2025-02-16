@@ -59,7 +59,7 @@ class TagController extends Controller
         $note = Note::find($validated['note_id']);
         $note->tags()->attach($tag->id);
 
-        return redirect()->back()->with('success', 'タグが追加されました');
+        return redirect()->back();
     }
 
     /**

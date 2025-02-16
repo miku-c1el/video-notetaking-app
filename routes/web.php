@@ -61,24 +61,31 @@ Route::get('/videos', [VideoController::class, 'index'])->name('videos.index');
 Route::middleware(['auth'])->group(function () {
     Route::get('/notes/index', [NoteController::class, 'index'])->name('notes.index');
     Route::get('/api/notes', [NoteController::class, 'apiIndex']);
-    Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
-    Route::get('/notes/{noteId}', [NoteController::class, 'show'])->name('notes.show');
     Route::patch('/notes/{note}', [NoteController::class, 'update'])->name('notes.update');
     Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
+    // 確認済み
+    Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
+    Route::get('/notes/{note}', [NoteController::class, 'show'])->name('notes.show');
 });
 
 
 // moment関連
 Route::middleware(['auth'])->group(function () {
-    Route::get('/moments', [MomentController::class, 'index'])->name('moments.index');
     Route::post('/moments', [MomentController::class, 'store'])->name('moments.store');
     Route::put('/moments/{moment}', [MomentController::class, 'update'])->name('moments.update');
     Route::delete('/moments/{moment}', [MomentController::class, 'destroy'])->name('moments.destroy');
+    // 確認済み
+    Route::get('/moments', [MomentController::class, 'index'])->name('moments.index');
+});
+
+// tag関連
+Route::middleware(['auth'])->group(function () {
+    Route::get('/tags', [TagController::class, 'index'])->name('tags.index');
 });
 
 // note tag 関連
 Route::get('/api/tags/search', [TagController::class, 'search'])->name('api.tags.search');
-Route::get('api/tags', [TagController::class, 'index'])->name('tags.index');
+
 
 
 //使ってる

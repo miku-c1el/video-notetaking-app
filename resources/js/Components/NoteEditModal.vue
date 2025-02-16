@@ -216,7 +216,8 @@ const cancelDelete = () => {
 
 <template>
     <TransitionRoot appear :show="modelValue" as="div">
-        <Dialog as="div" @close="closeModal" class="relative z-50">
+        <Dialog as="div" @close="closeModal" class="relative z-[100]">
+            <!-- モーダルの背景 -->
             <TransitionChild
                 as="div"
                 enter="duration-300 ease-out"
@@ -228,6 +229,8 @@ const cancelDelete = () => {
             >
                 <div class="fixed inset-0 bg-black bg-opacity-25" />
             </TransitionChild>
+
+            <!-- モーダルコンテンツ -->
             <div class="fixed inset-0 overflow-y-auto">
                 <div class="flex min-h-full items-center justify-center p-4">
                     <TransitionChild
@@ -238,41 +241,43 @@ const cancelDelete = () => {
                         leave="duration-200 ease-in"
                         leave-from="opacity-100 scale-100"
                         leave-to="opacity-0 scale-95"
+                        class="w-screen max-w-[70vw] md:max-w-[50vw] lg:max-w-[40vw]"
                     >
-                    <DialogPanel class="relative w-full max-w-md transform bg-white p-6 shadow-xl transition-all rounded-2xl">
+                        <DialogPanel class="relative w-full bg-white p-6 sm:p-8 shadow-xl transition-all rounded-2xl mx-auto">
                             <button 
                                 @click="closeModal" 
                                 class="absolute top-4 right-4 text-gray-400 hover:text-gray-500 focus:outline-none"
                             >
                                 <XMarkIcon class="h-6 w-6" />
                             </button>
-                            <div class="space-y-4">
-                                <!-- タイトル編集 -->
+
+                            <div class="space-y-6">
+                                <!-- ノート名編集 -->
                                 <div>
-                                    <h4 class="text-sm font-medium mb-2">ノートの名前を変更</h4>
+                                    <h4 class="text-base font-medium mb-3">ノートの名前を変更</h4>
                                     <input
                                         type="text"
                                         v-model="title"
                                         @input="debouncedSaveTitle(title)"
                                         placeholder="ノート名を入力"
-                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-base p-3"
                                     >
                                 </div>
 
                                 <!-- タグ編集 -->
                                 <div>
-                                    <h4 class="text-sm font-medium mb-2">タグ</h4>
+                                    <h4 class="text-base font-medium mb-3">タグ</h4>
                                     <!-- 既存のタグ表示 -->
-                                    <div v-if="tags.length > 0" class="mb-3 flex flex-wrap gap-2">
+                                    <div v-if="tags.length > 0" class="mb-4 flex flex-wrap gap-2">
                                         <div
                                             v-for="tag in tags"
                                             :key="tag.id"
-                                            class="bg-gray-100 px-2 py-1 rounded-md text-sm flex items-center gap-1"
+                                            class="bg-gray-100 px-3 py-2 rounded-lg text-base flex items-center gap-2"
                                         >
                                             {{ tag.name }}
                                             <button
                                                 @click="detachTag(tag.id)"
-                                                class="text-gray-500 hover:text-gray-700 ml-1"
+                                                class="text-gray-500 hover:text-gray-700"
                                             >
                                                 ×
                                             </button>
@@ -284,37 +289,37 @@ const cancelDelete = () => {
                                             type="text"
                                             v-model="tagInput"
                                             placeholder="タグを追加"
-                                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-base p-3"
                                         >
                                         <!-- 検索結果ドロップダウン -->
                                         <div
                                             v-if="tagInput && showDropdown"
-                                            class="absolute left-0 right-0 mt-1 bg-white border rounded-md shadow-lg z-50 max-h-60 overflow-y-auto"
+                                            class="absolute left-0 right-0 mt-2 bg-white border rounded-lg shadow-lg z-50 max-h-72 overflow-y-auto"
                                         >
                                             <div v-if="filteredSearchResults.length > 0">
                                                 <div
                                                     v-for="tag in filteredSearchResults"
                                                     :key="tag.id"
-                                                    class="px-4 py-2 hover:bg-gray-50 flex items-center justify-between group"
+                                                    class="px-4 py-3 hover:bg-gray-50 flex items-center justify-between group"
                                                 >
                                                     <button
                                                         @click="handleTagSelect(tag)"
-                                                        class="flex-1 text-left"
+                                                        class="flex-1 text-left text-base"
                                                     >
                                                         #{{ tag.name }}
                                                     </button>
-                                                    <div class="hidden group-hover:flex items-center gap-2">
+                                                    <div class="hidden group-hover:flex items-center gap-3">
                                                         <button
                                                             @click="editTag(tag)"
                                                             class="text-gray-500 hover:text-gray-700"
                                                         >
-                                                            <PencilIcon class="w-4 h-4" />
+                                                            <PencilIcon class="w-5 h-5" />
                                                         </button>
                                                         <button
                                                             @click="confirmDelete(tag)"
                                                             class="text-gray-500 hover:text-gray-700"
                                                         >
-                                                            <TrashIcon class="w-4 h-4" />
+                                                            <TrashIcon class="w-5 h-5" />
                                                         </button>
                                                     </div>
                                                 </div>
@@ -322,9 +327,9 @@ const cancelDelete = () => {
                                             <button
                                                 v-if="!isDuplicateTag"
                                                 @click="createTag"
-                                                class="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
+                                                class="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 text-base"
                                             >
-                                                <PlusIcon class="w-4 h-4" />
+                                                <PlusIcon class="w-5 h-5" />
                                                 <span>「{{ tagInput }}」を作成</span>
                                             </button>
                                         </div>

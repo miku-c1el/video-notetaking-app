@@ -12,7 +12,7 @@ const props = defineProps({
         required: true
     },
     moments: Array,
-    tags: Array
+    tags: Array,
 });
 
 const player = ref(null);
@@ -20,22 +20,20 @@ const playerReady = ref(false);
 const lastTimestamp = ref(null);
 const isModalOpen = ref(false);
 const tags = ref(props.tags || []);
+const moments = ref(props.moments || []);
 
 const getMoments = () => {
-    router.get(route('moments.index'), { 
-        note_id: props.note.id 
-    }, {
-        preserveState: true,
-        preserveScroll: true,
-        only: ['moments']
+    axios.get(route('moments.index'), { 
+        params: { note_id: props.note.id }
+    })
+    .then(response => {
+        moments.value = response.data.moments;
     });
 };
 
 const getTags = () => {
     axios.get(route('tags.index'), { 
-        params: {
-            note_id: props.note.id 
-        }
+        params: { note_id: props.note.id }
     })
     .then(response => {
         tags.value = response.data.tags;
@@ -177,13 +175,13 @@ const refreshTags = () => {
                 </div>
 
                 <!-- ノートセクション -->
-                <div class="w-full lg:w-[40%] h-[50vh] lg:h-full"> <!-- モバイルでの高さ制限を追加 -->
+                <div class="w-full lg:w-[40%] h-full flex flex-col"> <!-- モバイルでの高さ制限を追加 -->
                     <VideoMomentCapture 
                         v-if="note.id"
                         :noteId="note.id"
                         :player="player"
                         :getCurrentTime="getCurrentTime"
-                        :moments="props.moments"
+                        :moments="moments"
                     />
                 </div>
             </div>

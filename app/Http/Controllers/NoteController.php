@@ -126,16 +126,17 @@ class NoteController extends Controller
             'youtubeVideo_id' => $video['videoId'],
             'thumbnail' => $video['thumbnail'],
         ]);
-        return Inertia::location(route('notes.show', ['noteId' => $note->id]));
+        // return Inertia::location(route('notes.show', ['note' => $note->id]));
+        return redirect()->route('notes.show', ['note' => $note->id]);  
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $noteId)
+    public function show(string $id)
     {
-        $note = Note::findOrFail($noteId);
-        $moments = Moment::where('note_id', $noteId)
+        $note = Note::findOrFail($id);
+        $moments = Moment::where('note_id', $id)
             ->orderBy('timestamp', 'asc')
             ->get();
         return Inertia::render('Note/Create', [

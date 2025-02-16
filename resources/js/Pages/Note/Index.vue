@@ -29,8 +29,13 @@ const displayedNotes = computed(() => {
 const formatTimeAgo = (date) => {
   const now = new Date();
   const past = new Date(date);
-  const diffTime = Math.abs(now - past);
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const pastDay = new Date(past.getFullYear(), past.getMonth(), past.getDate());
+  console.log(pastDay);
+
+  const diffTime = today - pastDay;
+  const diffDays = diffTime / (1000 * 60 * 60 * 24); // 日数差
 
   if (diffDays === 0) return '今日';
   if (diffDays === 1) return '昨日';
@@ -39,6 +44,7 @@ const formatTimeAgo = (date) => {
   if (diffDays < 365) return `${Math.floor(diffDays / 30)}ヶ月前`;
   return `${Math.floor(diffDays / 365)}年前`;
 };
+
 
 // タブ切り替え用の関数を追加
 const switchTab = async (newTab) => {
@@ -129,9 +135,6 @@ const showNote = (note) => {
     );
 };
 
-const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('ja-JP');
-};
 </script>
 
 <template>
@@ -240,17 +243,6 @@ const formatDate = (date) => {
         
                                 <div class="text-sm text-gray-500 mb-2">
                                 {{ formatTimeAgo(note.created_at) }}
-                                </div>
-        
-                                <!-- タイムスタンプタグ -->
-                                <div class="flex flex-wrap gap-2 mb-2">
-                                    <span
-                                        v-for="timestamp in note.timestamps"
-                                        :key="timestamp"
-                                        class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-gray-100 text-gray-600"
-                                    >
-                                        {{ timestamp }}
-                                    </span>
                                 </div>
         
                                 <!-- 関連タグ一覧 -->
