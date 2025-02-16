@@ -40,7 +40,11 @@ const closeModal = () => {
 
 <template>
     <TransitionRoot appear :show="modelValue" as="template">
-        <Dialog as="div" @close="closeModal" class="relative z-[60]">
+        <Dialog 
+            as="div" 
+            @close="closeModal" 
+            class="relative z-[60]"
+        >
             <TransitionChild
                 as="template"
                 enter="duration-300 ease-out"
@@ -52,7 +56,6 @@ const closeModal = () => {
             >
                 <div class="fixed inset-0 bg-black bg-opacity-25" />
             </TransitionChild>
-
             <div class="fixed inset-0 overflow-y-auto">
                 <div class="flex min-h-full items-center justify-center p-4">
                     <TransitionChild
@@ -66,7 +69,7 @@ const closeModal = () => {
                     >
                         <DialogPanel class="w-full max-w-md transform bg-white p-6 shadow-xl transition-all rounded-2xl">
                             <h3 class="text-lg font-bold mb-4">タグの名前を変更</h3>
-                            
+
                             <input
                                 type="text"
                                 v-model="tagName"

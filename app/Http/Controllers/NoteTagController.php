@@ -24,7 +24,7 @@ class NoteTagController extends Controller
             'tag_id' => 'required|exists:tags,id'
         ]);
 
-        $note->tags()->attach($validated['tag_id']);
+        $note->tags()->syncWithoutDetaching($validated['tag_id']);
 
         return redirect()->back();
     }

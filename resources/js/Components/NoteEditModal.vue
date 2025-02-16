@@ -3,13 +3,15 @@ import { ref, watch, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
 import TagEditModal from '@/Components/TagEditModal.vue';
-import { 
+import {
     TransitionRoot, 
     TransitionChild, 
     Dialog, 
-    DialogPanel 
+    DialogPanel,
+    DialogTitle
 } from '@headlessui/vue';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { XMarkIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     modelValue: Boolean,
@@ -29,6 +31,8 @@ const selectedTags = ref(props.note?.tags || []);
 const isSearching = ref(false);
 const showTagEditModal = ref(false);
 const selectedTagForEdit = ref(null);
+const showDeleteConfirm = ref(false);
+const tagToDelete = ref(null);
 
 // 選択済みタグを除外した検索結果
 const filteredSearchResults = computed(() => {
@@ -157,6 +161,7 @@ const handleTagUpdate = async (newName) => {
             showTagEditModal.value = false;
             selectedTagForEdit.value = null;
             emit('tag-updated');
+            tagInput.value = '';
         }
     });
 };
@@ -173,13 +178,47 @@ watch(tagInput, (newValue) => {
 const closeModal = () => {
     emit('update:modelValue', false);
 };
+
+const confirmDelete = (tag) => {
+    tagToDelete.value = tag;
+    showDeleteConfirm.value = true;
+};
+
+const handleDelete = async () => {
+    if (!tagToDelete.value) return;
+    try {
+        router.delete(route('tags.destroy', tagToDelete.value.id), {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                showDeleteConfirm.value = false;
+                tagToDelete.value = null;
+                emit('tag-updated');
+                tagInput.value = '';
+            },
+            onError: (errors) => {
+                console.error('タグの削除に失敗しました:', errors);
+                showDeleteConfirm.value = false;
+            }
+        });
+    } catch (error) {
+        console.error('予期せぬエラーが発生しました:', error);
+        showDeleteConfirm.value = false;
+    }
+};
+
+const cancelDelete = () => {
+    showDeleteConfirm.value = false;
+    tagToDelete.value = null;
+    tagInput.value = '';
+};
 </script>
 
 <template>
-    <TransitionRoot appear :show="modelValue" as="template">
+    <TransitionRoot appear :show="modelValue" as="div">
         <Dialog as="div" @close="closeModal" class="relative z-50">
             <TransitionChild
-                as="template"
+                as="div"
                 enter="duration-300 ease-out"
                 enter-from="opacity-0"
                 enter-to="opacity-100"
@@ -189,11 +228,10 @@ const closeModal = () => {
             >
                 <div class="fixed inset-0 bg-black bg-opacity-25" />
             </TransitionChild>
-
             <div class="fixed inset-0 overflow-y-auto">
                 <div class="flex min-h-full items-center justify-center p-4">
                     <TransitionChild
-                        as="template"
+                        as="div"
                         enter="duration-300 ease-out"
                         enter-from="opacity-0 scale-95"
                         enter-to="opacity-100 scale-100"
@@ -201,7 +239,13 @@ const closeModal = () => {
                         leave-from="opacity-100 scale-100"
                         leave-to="opacity-0 scale-95"
                     >
-                        <DialogPanel class="w-full max-w-md transform bg-white p-6 shadow-xl transition-all rounded-2xl">
+                    <DialogPanel class="relative w-full max-w-md transform bg-white p-6 shadow-xl transition-all rounded-2xl">
+                            <button 
+                                @click="closeModal" 
+                                class="absolute top-4 right-4 text-gray-400 hover:text-gray-500 focus:outline-none"
+                            >
+                                <XMarkIcon class="h-6 w-6" />
+                            </button>
                             <div class="space-y-4">
                                 <!-- タイトル編集 -->
                                 <div>
@@ -266,16 +310,8 @@ const closeModal = () => {
                                                         >
                                                             <PencilIcon class="w-4 h-4" />
                                                         </button>
-                                                            <!-- タグ編集モーダル - selectedTagForEditが存在する場合のみ表示 -->
-                                                        <TagEditModal
-                                                            v-if="selectedTagForEdit"
-                                                            v-model="showTagEditModal"
-                                                            :tag="selectedTagForEdit"
-                                                            @save="handleTagUpdate"
-                                                            @update:modelValue="closeTagEditModal"
-                                                        />
                                                         <button
-                                                            @click="detachTag(tag.id)"
+                                                            @click="confirmDelete(tag)"
                                                             class="text-gray-500 hover:text-gray-700"
                                                         >
                                                             <TrashIcon class="w-4 h-4" />
@@ -297,6 +333,50 @@ const closeModal = () => {
                             </div>
                         </DialogPanel>
                     </TransitionChild>
+                </div>
+            </div>
+
+            <!-- タグ編集モーダル -->
+            <TagEditModal
+                v-if="selectedTagForEdit"
+                v-model="showTagEditModal"
+                :tag="selectedTagForEdit"
+                @save="handleTagUpdate"
+                @update:modelValue="closeTagEditModal"
+            />
+
+            <!-- 削除確認モーダル -->
+            <div
+            v-if="showDeleteConfirm"
+            class="relative z-60"
+            >
+                <div class="fixed inset-0 bg-black/30" aria-hidden="true" />
+                
+                <div class="fixed inset-0 flex items-center justify-center p-4">
+                    <DialogPanel class="w-full max-w-sm rounded bg-white p-6 shadow-xl">
+                        <DialogTitle class="text-lg font-medium mb-4">
+                            タグの削除
+                        </DialogTitle>
+                        
+                        <p class="mb-4">
+                            「{{ tagToDelete?.name }}」を削除してもよろしいですか？
+                        </p>
+                        
+                        <div class="flex justify-end gap-3">
+                            <button
+                                @click="cancelDelete"
+                                class="px-4 py-2 text-gray-600 hover:text-gray-800"
+                            >
+                                キャンセル
+                            </button>
+                            <button
+                                @click="handleDelete"
+                                class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                            >
+                                削除
+                            </button>
+                        </div>
+                    </DialogPanel>
                 </div>
             </div>
         </Dialog>
