@@ -2,9 +2,19 @@
 import Layout from '@/Layouts/MomentLayout.vue';
 import VideoMomentCapture from '@/Components/VideoMomentCapture.vue';
 import NoteEditModal from '@/Components/NoteEditModal.vue';
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, onUnmounted } from 'vue';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
+
+const isMobile = ref(window.innerWidth < 1024);
+
+const updateScreenSize = () => {
+    isMobile.value = window.innerWidth < 1024;
+};
+
+onUnmounted(() => {
+    window.removeEventListener('resize', updateScreenSize);
+});
 
 const props = defineProps({
     note: {
@@ -92,6 +102,7 @@ const getTimestampFromUrl = () => {
 };
 
 onMounted(() => {
+    window.addEventListener('resize', updateScreenSize);
     // URLからタイムスタンプを取得して保存
     lastTimestamp.value = getTimestampFromUrl();
 
@@ -130,64 +141,88 @@ const refreshTags = () => {
 <template>
     <Layout>
         <div class="h-full">
-            <div class="flex h-full flex-col lg:flex-row"> <!-- スマートフォンで縦並び、PCで横並び -->
-                <!-- メインコンテンツ -->
+            <div class="sticky top-0 z-10 bg-white flex h-full flex-col lg:flex-row"> 
+                <!-- メインコンテンツ（動画＋タイトル） -->
                 <div class="w-full lg:w-[60%] h-full flex flex-col"> 
-                    <!-- 動画プレイヤーセクション -->
-                    <div class="w-full h-[40vh] lg:h-[50vh] xl:h-[60vh]"> <!-- 高さを画面の比率で設定 -->
-                        <div
-                        :id="`youtube-player-${props.note.youtubeVideo_id}`"
-                        class="w-full h-full"
-                        >
+                    
+                    <!-- 動画プレイヤーセクション - 固定 or スティッキー -->
+                    <div 
+                        class="w-full bg-white transition-all"
+                        :class="{
+                            'fixed top-0 left-0 w-full z-50': isMobile,
+                            'sticky top-0 z-100': !isMobile
+                        }"
+                    >
+                        <div class="w-full h-[40vh] lg:h-[50vh] xl:h-[60vh]">
+                            <div
+                                :id="`youtube-player-${props.note.youtubeVideo_id}`"
+                                class="w-full h-full"
+                            ></div>
                         </div>
                     </div>
-                    
-                    <!-- タイトルセクション -->
-                    <div class="bg-white p-4 lg:p-6 flex-shrink-0">
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-                            <h2 class="text-lg font-medium text-gray-900">{{ props.note?.title }}</h2>
-                            <button
-                            @click="isModalOpen = true"
-                            class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-md transition-colors"
-                            >
-                                詳細編集
-                            </button>
-                        </div>
 
-                        <NoteEditModal
-                            v-model="isModalOpen"
-                            :note="note"
-                            :tags="tags"
-                            @tag-updated="refreshTags"
-                        />
+                    <!-- md以下の時は余白を追加 -->
+                    <div v-if="isMobile" class="h-[35vh]"></div>
 
-                        <!-- タグセクション -->
-                        <div class="flex flex-wrap gap-2 mt-4">
-                            <span
-                                v-for="tag in tags" 
-                                :key="tag.id"
-                                class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
-                            >
-                                # {{ tag.name }}
-                            </span>
+                    <!-- lg以上: 独立スクロール, md以下: メインスクロールの一部 -->
+                    <div class="lg:flex-1 lg:overflow-y-auto">
+                        <div class="bg-white">
+                            <div class="p-4 lg:p-6">
+                                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                    <h2 class="text-lg font-medium text-gray-900">{{ props.note?.title }}</h2>
+                                    <button
+                                        @click="isModalOpen = true"
+                                        class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-md transition-colors"
+                                    >
+                                        詳細編集
+                                    </button>
+                                </div>
+
+                                <NoteEditModal
+                                    v-model="isModalOpen"
+                                    :note="note"
+                                    :tags="tags"
+                                    @tag-updated="refreshTags"
+                                />
+
+                                <!-- タグセクション -->
+                                <div class="flex flex-wrap gap-2 mt-4">
+                                    <span
+                                        v-for="tag in tags" 
+                                        :key="tag.id"
+                                        class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                                    >
+                                        # {{ tag.name }}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- ノートセクション -->
-                <div class="w-full lg:w-[40%] h-full flex flex-col"> <!-- モバイルでの高さ制限を追加 -->
+                <div class="w-full lg:w-[40%] lg:h-full lg:overflow-hidden">
                     <VideoMomentCapture 
                         v-if="note.id"
                         :noteId="note.id"
                         :player="player"
                         :getCurrentTime="getCurrentTime"
                         :moments="moments"
+                        class="lg:h-full"
                     />
                 </div>
             </div>
         </div>
     </Layout>
 </template>
+
+<style>
+.overflow-y-auto {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+</style>
+
 
 
 

@@ -129,7 +129,7 @@ const jumpToTimestamp = (timestamp) => {
 </script>
 
 <template>
-  <div class="h-full border-l border-gray-200">
+  <div class="border-l-0 lg:border-l border-gray-200 h-full">
     <div class="h-full bg-gray-50 flex flex-col">
       <!-- 重複アラート -->
       <div
@@ -147,7 +147,7 @@ const jumpToTimestamp = (timestamp) => {
       <Dialog
         :open="showDeleteConfirm"
         @close="cancelDelete"
-        class="relative z-60"
+        class="relative z-100"
       >
         <div class="fixed inset-0">
           <div class="fixed inset-0 bg-black/30" aria-hidden="true" />
@@ -181,26 +181,26 @@ const jumpToTimestamp = (timestamp) => {
         </div>
       </Dialog>
 
-      <div class="p-6 pb-4 bg-gray-50">
+      <div class="p-4 lg:p-6 bg-gray-50">
         <div class="flex justify-between items-center">
           <h2 class="text-lg font-semibold">モーメント ({{ moments.length }})</h2>
           <button
-            @click="createMoment"
-            class="px-4 py-2 bg-coral-500 text-black rounded-md hover:bg-coral-600"
+              @click="createMoment"
+              class="px-4 py-2 bg-coral-500 text-black rounded-md hover:bg-coral-600"
           >
-            モーメントをキャプチャ
+              モーメントをキャプチャ
           </button>
         </div>
       </div>
 
       <!-- モーメント一覧 -->
-      <div class="flex-1 overflow-y-auto px-6 h-0">
+      <div class="lg:flex-1 lg:overflow-y-auto px-6">
         <template v-if="moments.length > 0">
           <Card 
-            v-for="moment in moments" 
-            :key="moment.id" 
-            :id="'moment-' + moment.id"
-            class="p-4 mb-4 bg-white"
+              v-for="moment in moments" 
+              :key="moment.id" 
+              :id="'moment-' + moment.id"
+              class="p-4 mb-4 bg-white"
           >
             <div class="flex justify-between items-start mb-2">
               <button
@@ -233,9 +233,9 @@ const jumpToTimestamp = (timestamp) => {
               ></textarea>
             </div>
           </Card>
-          <div class="pb-6"></div>
+          <div class="mb-6"></div>
         </template>
-        <div v-else class="flex items-center justify-center h-[calc(100%-2rem)]">
+        <div v-else class="flex items-center justify-center h-32">
           <p class="text-gray-500">まだモーメントがありません。</p>
         </div>
       </div>
@@ -255,6 +255,11 @@ textarea {
 
 .slide-in-from-top {
   animation: slideInFromTop 0.3s ease-out;
+}
+
+.overflow-y-auto {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 @keyframes fadeIn {

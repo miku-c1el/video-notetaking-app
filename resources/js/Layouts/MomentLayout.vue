@@ -9,7 +9,8 @@
             </div>
         </nav>
 
-        <main class="flex-1 overflow-hidden">
+        <!-- 修正: overflow-y-auto を追加 -->
+        <main class="flex-1 overflow-y-auto">
             <slot />
         </main>
     </div>
