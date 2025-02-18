@@ -17,6 +17,6 @@ class Tag extends Model
 
     public function notes(): BelongsToMany
     {
-        return $this->belongsToMany(Note::class)->withTimestamps()->withPivot('created_at');
+        return $this->belongsToMany(Note::class, 'note_tag', 'tag_id', 'note_id')->withTimestamps()->withPivot('created_at');
     }
 }

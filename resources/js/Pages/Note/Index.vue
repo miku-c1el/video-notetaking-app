@@ -12,6 +12,7 @@ const props = defineProps({
       data: [],
     })
   },
+  tags: Array,
   filters: {
     type: Object,
     default: () => ({})
@@ -251,7 +252,7 @@ const showNote = (note) => {
                         <TagFilterModal
                           :is-open="showFilterModal"
                           :initial-selected-tags="selectedTags"
-                          :available-tags="tags"
+                          :available-tags="props.tags"
                           @close="showFilterModal = false"
                           @update:selected-tags="selectedTags = $event"
                         />

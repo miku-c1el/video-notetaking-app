@@ -19,9 +19,9 @@ const emit = defineEmits(['close', 'update:selectedTags']);
 const selectedTags = ref(props.initialSelectedTags || []);
 
 const toggleTag = (tag) => {
-  const index = selectedTags.value.indexOf(tag.id);
+  const index = selectedTags.value.indexOf(tag.name);
   if (index === -1) {
-    selectedTags.value.push(tag.id);
+    selectedTags.value.push(tag.name);
   } else {
     selectedTags.value.splice(index, 1);
   }
@@ -35,11 +35,6 @@ const applyFilters = () => {
   router.get(
     route('notes.index'),
     { tags: selectedTags.value },
-    {
-      preserveState: true,
-      preserveScroll: true,
-      only: ['notes']
-    }
   );
   emit('close');
 };
@@ -73,7 +68,7 @@ const applyFilters = () => {
               @click="toggleTag(tag)"
               :class="[
                 'px-3 py-1 rounded-full text-sm font-medium transition-colors',
-                selectedTags.includes(tag.id)
+                selectedTags.includes(tag.name)
                   ? 'bg-orange-100 text-orange-800'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               ]"

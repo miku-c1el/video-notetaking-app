@@ -22,11 +22,12 @@ class NoteController extends Controller
     public function index(Request $request)
     {
         $query = Note::where('user_id', auth()->id());
+
         if ($request->has('tags')) {
-            $tags = json_decode($request->tags, true);
-            if (!empty($tags)) {
-                $query->whereHas('tags', function ($q) use ($tags) {
-                    $q->whereIn('name', $tags);
+            $selected_tags = $request->tags;
+            if (!empty($selected_tags)) {
+                $query->whereHas('tags', function ($q) use ($selected_tags) {
+                    $q->whereIn('name', $selected_tags);
                 });
             }
         }
@@ -39,16 +40,7 @@ class NoteController extends Controller
             ->latest()
             ->paginate(self::PER_PAGE);
 
-        // dd($paginator->through(function ($note) {
-        //         return [
-        //             'id' => $note->id,
-        //             'title' => $note->title,
-        //             'thumbnail' => $note->thumbnail,
-        //             'created_at' => $note->created_at,
-        //             'tags' => $note->tags,
-        //             'user_id' => $note->user_id 
-        //         ];
-        //     })->toArray()['data'][0]);
+        $all_tags = Tag::where('user_id', auth()->id())->get();
         return Inertia::render('Note/Index', [
             'initialNotes' => $paginator->through(fn($note) => [
                 'id' => $note->id,
@@ -58,6 +50,7 @@ class NoteController extends Controller
                 'tags' => $note->tags,
                 'user_id' => $note->user_id
             ])->toArray(),
+            'tags' => $all_tags,
             'filters' => $request->only(['tags', 'sort', 'direction']),
             'pagination' => [
                 'current_page' => $paginator->currentPage(),
