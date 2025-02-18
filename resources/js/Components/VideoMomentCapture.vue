@@ -147,12 +147,12 @@ const jumpToTimestamp = (timestamp) => {
       <Dialog
         :open="showDeleteConfirm"
         @close="cancelDelete"
-        class="relative z-100"
+        class="relative z-[200]"
       >
-        <div class="fixed inset-0">
+        <div class="fixed inset-0 z-[190]">
           <div class="fixed inset-0 bg-black/30" aria-hidden="true" />
           
-          <div class="fixed inset-0 flex items-center justify-center p-4">
+          <div class="fixed inset-0 flex items-center justify-center p-4 z-[200]">
             <DialogPanel class="w-full max-w-sm rounded bg-white p-6 shadow-xl">
               <DialogTitle class="text-lg font-medium mb-4">
                 モーメントの削除

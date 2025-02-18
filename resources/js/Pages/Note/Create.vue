@@ -153,7 +153,7 @@ const refreshTags = () => {
                             'sticky top-0 z-100': !isMobile
                         }"
                     >
-                        <div class="w-full h-[40vh] lg:h-[50vh] xl:h-[60vh]">
+                        <div class="w-full h-[60vh] lg:h-[50vh] xl:h-[60vh]">
                             <div
                                 :id="`youtube-player-${props.note.youtubeVideo_id}`"
                                 class="w-full h-full"
@@ -162,7 +162,7 @@ const refreshTags = () => {
                     </div>
 
                     <!-- md以下の時は余白を追加 -->
-                    <div v-if="isMobile" class="h-[35vh]"></div>
+                    <div v-if="isMobile" class="h-[53vh]"></div>
 
                     <!-- lg以上: 独立スクロール, md以下: メインスクロールの一部 -->
                     <div class="lg:flex-1 lg:overflow-y-auto">

@@ -1,29 +1,49 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useForm, router } from '@inertiajs/vue3';
 import Modal from '@/Components/Modal.vue';
 import TagFilterModal from '@/Components/TagFilterModal.vue';
 
 const props = defineProps({
-  initialNotes: Array,
-  filters: Object, //['すべてのtag', '', 'direction']
-  tags: Array,
+  initialNotes: {
+    type: Object,
+    required: true,
+    default: () => ({
+      data: [],
+    })
+  },
+  filters: {
+    type: Object,
+    default: () => ({})
+  },
+  pagination: {
+    type: Object,
+    default: () => ({
+      current_page: 1,
+      per_page: 12,
+      total: 0,
+      last_page: 1,
+      has_more: false
+    })
+  }
 });
-console.log(props.filters);
-const notes = ref(props.initialNotes || []);
+
+// データの初期化
+const notes = ref(props.initialNotes?.data ?? []);
 const activeTab = ref('my-notes');
-const page = ref(1);
+const page = ref(props.pagination.current_page || 1);
 const isLoading = ref(false);
-const showCreateModal = ref(false);
+const hasMore = ref(props.pagination.has_more || false);
 const loadingElement = ref(null);
 const showFilterModal = ref(false);
 const selectedTags = ref(props.filters?.tags || []);
-
 // ※ 書き直し必要
 const displayedNotes = computed(() => {
-  return notes.value.filter(note => {
-    return true;
-  });
+  if (!Array.isArray(notes.value)) {
+    console.warn('notes.value is not an array:', notes.value);
+    return [];
+  }
+  return notes.value;
 });
 
 const formatTimeAgo = (date) => {
@@ -32,7 +52,6 @@ const formatTimeAgo = (date) => {
 
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const pastDay = new Date(past.getFullYear(), past.getMonth(), past.getDate());
-  console.log(pastDay);
 
   const diffTime = today - pastDay;
   const diffDays = diffTime / (1000 * 60 * 60 * 24); // 日数差
@@ -54,50 +73,80 @@ const switchTab = async (newTab) => {
   await loadMoreNotes(); // 新しいデータを取得
 };
 
-// Infinite Scroll
-onMounted(() => {
-  const observer = new IntersectionObserver(async (entries) => {
-    const target = entries[0];
-    if (target.isIntersecting && !isLoading.value) {
-      await loadMoreNotes();
-    }
-  }, {
-    root: null,
-    rootMargin: '100px',
-    threshold: 0.1
-  });
+const observer = ref(null);
 
-  if (loadingElement.value) {
-    observer.observe(loadingElement.value);
+onMounted(async () => {
+  await nextTick(); 
+  setupInfiniteScroll();
+});
+
+onUnmounted(() => {
+  if (observer.value) {
+    observer.value.disconnect();
   }
 });
 
+const setupInfiniteScroll = () => {
+  if (observer.value) {
+    observer.value.disconnect();
+  }
+  observer.value = new IntersectionObserver(
+    async (entries) => {
+      const target = entries[0];
+      if (target.isIntersecting && !isLoading.value && hasMore.value) {
+        await loadMoreNotes();
+      }
+    },
+    {
+      root: null,
+      rootMargin: '100px',
+      threshold: 0.1
+    }
+  );
+
+  if (loadingElement.value) {
+    observer.value.observe(loadingElement.value);
+  }
+};
+
 const loadMoreNotes = async () => {
-  if (isLoading.value) return;
+  if (isLoading.value || !hasMore.value) return;
 
   isLoading.value = true;
-  const nextPage = page.value + 1;
-
+  page.value += 1;
   try {
-    const response = await fetch(`/api/notes?page=${nextPage}&tab=${activeTab.value}`);
-    const data = await response.json();
+    const response = await fetch(
+      `/api/notes?page=${page.value}&tab=${activeTab.value}&tags=${encodeURIComponent(JSON.stringify(selectedTags.value))}`
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
-    if (data.data.length > 0) {
-      notes.value = [...notes.value, ...data.data];
-      page.value = nextPage;
+    const data = await response.json();
+    if (data.data.data && Array.isArray(data.data.data) && data.data.data.length > 0) {
+      notes.value = Array.isArray(notes.value) 
+        ? [...notes.value, ...data.data.data]
+        : data.data.data;
+
+      hasMore.value = data.current_page < data.last_page;
+    } else {
+      hasMore.value = false;
     }
   } catch (error) {
     console.error('Failed to load more notes:', error);
+    hasMore.value = false;
   } finally {
     isLoading.value = false;
   }
 };
 
-const newNote = useForm({
-  title: '',
-  content: '',
-  tags: [],
-});
+// Reset data when filters change
+const resetData = () => {
+  notes.value = [];
+  page.value = 1;
+  hasMore.value = true;
+  loadMoreNotes();
+};
 
 async function filterByTag(tag) {
   selectedTag.value=tag===selectedTag.value? null:tag;
@@ -107,20 +156,21 @@ async function filterByTag(tag) {
   await async();
 }
 
+// Watch for filter changes
+watch(selectedTags, resetData);
+watch(activeTab, resetData);
+
+watch(loadingElement, (newVal) => {
+  if (newVal && observer.value) {
+    setupInfiniteScroll(); // 要素が変更されたら再設定
+  }
+});
+
 const updateSort = async () => {
   notes.value = [];
   page.value = 1;
   noMoreData.value = false;
   await async();
-};
-
-const createNote = () => {
-  newNote.post('/notes', {
-    onSuccess: () => {
-      showCreateModal.value = false;
-      newNote.reset();
-    },
-  });
 };
 
 const deleteNote = (id) => {
@@ -147,10 +197,10 @@ const showNote = (note) => {
                         <img src="/path-to-your-logo.png" alt="Logo" class="h-8 w-auto" />
                         <h1 class="ml-3 text-xl font-semibold">Inspod</h1>
                     </div>
-                    <button @click="showCreateModal = true" class="bg-orange-300 hover:bg-orange-400 text-black px-4 py-2 rounded-full flex items-center">
-                    <span class="mr-2">+</span>
-                    ノートの新規追加
-                    </button>
+                    <a href="/videos" class="px-4 py-2 bg-orange-300 hover:bg-orange-400 rounded-full">
+                      <span class="mr-2">+</span>
+                      動画を検索する
+                    </a>
                 </div>
             </div>
         </header>
@@ -273,19 +323,12 @@ const showNote = (note) => {
                 
             <!-- ローディングインジケーター -->
             <div
-                v-if="isLoading"
-                class="flex justify-center items-center py-4"
+                class="flex justify-center items-center py-4 min-h-[100px]"
                 ref="loadingElement"
             >
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
+                <div v-if="isLoading" class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
             </div>
         </div>
-    
-  
-        <!-- 新規ノート作成モーダル -->
-        <!-- <Modal v-if="showCreateModal" @close="showCreateModal = false"> -->
-        <!-- モーダルの内容は前回と同じ -->
-        <!-- </Modal> -->
     </div>
 </template>
 

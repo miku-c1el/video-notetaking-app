@@ -13,85 +13,104 @@ use Illuminate\Support\Facades\Auth;
 
 class NoteController extends Controller
 {
+    private const PER_PAGE = 12;
+
     /**
      * Display a listing of the resource.
      */
     // NoteController.php
     public function index(Request $request)
     {
-        // このリクエストにはtag, sort, directionのパラメータが含まれているという想定だが、初期の状態ではパラメータは含まれていないので、コード減らせそう
-        $query = Note::query();
-        if ($request->input('tab') === 'my-notes') {
-            $query->where('user_id', auth()->id());
-        }
-
-        if ($request->has('tags') && !empty($request->tags)) {
-            $query->whereHas('tags', function ($q) use ($request) {
-                $q->whereIn('tags.id', $request->tags);
-            });
+        $query = Note::where('user_id', auth()->id());
+        if ($request->has('tags')) {
+            $tags = json_decode($request->tags, true);
+            if (!empty($tags)) {
+                $query->whereHas('tags', function ($q) use ($tags) {
+                    $q->whereIn('name', $tags);
+                });
+            }
         }
 
         $sort = $request->input('sort', 'created_at');
         $direction = $request->input('direction', 'desc');
         $query->orderBy($sort, $direction);
     
-        $initialNotes = $query->with('tags')
+        $paginator = $query->with('tags')
             ->latest()
-            ->limit(12)
-            ->get()
-            ->map(function ($note) {
-                return [
-                    'id' => $note->id,
-                    'title' => $note->title,
-                    'thumbnail' => $note->thumbnail,
-                    'created_at' => $note->created_at,
-                    'tags' => $note->tags,
-                    'user_id' => $note->user_id 
-                ];
-            });
-    
-        // このタグ必要？？？？
-        $tags = Tag::where('user_id', auth()->id())
-                ->get();
-    
+            ->paginate(self::PER_PAGE);
+
+        // dd($paginator->through(function ($note) {
+        //         return [
+        //             'id' => $note->id,
+        //             'title' => $note->title,
+        //             'thumbnail' => $note->thumbnail,
+        //             'created_at' => $note->created_at,
+        //             'tags' => $note->tags,
+        //             'user_id' => $note->user_id 
+        //         ];
+        //     })->toArray()['data'][0]);
         return Inertia::render('Note/Index', [
-            'initialNotes' => $initialNotes,
-            'filters' => $request->only(['tag', 'sort', 'direction']),
-            'tags' => $tags
+            'initialNotes' => $paginator->through(fn($note) => [
+                'id' => $note->id,
+                'title' => $note->title,
+                'thumbnail' => $note->thumbnail,
+                'created_at' => $note->created_at,
+                'tags' => $note->tags,
+                'user_id' => $note->user_id
+            ])->toArray(),
+            'filters' => $request->only(['tags', 'sort', 'direction']),
+            'pagination' => [
+                'current_page' => $paginator->currentPage(),
+                'per_page' => self::PER_PAGE,
+                'total' => $paginator->total(),
+                'last_page' => $paginator->lastPage(),
+                'has_more' => $paginator->hasMorePages(),
+            ]
         ]);
     }
 
     public function apiIndex(Request $request)
     {
-        $query = Note::query();
-        
-        if ($request->input('tab') === 'my-notes') {
-            $query->where('user_id', auth()->id());
-        }
+        try {
+            $query = Note::query();
+            
+            if ($request->input('tab') === 'my-notes') {
+                $query->where('user_id', auth()->id());
+            }
 
-        if ($request->has('tag')) {
-            $query->whereHas('tags', function ($q) use ($request) {
-                $q->where('name', $request->tag);
-            });
-        }
+            if ($request->has('tags')) {
+                $tags = json_decode($request->tags, true);
+                if (!empty($tags)) {
+                    $query->whereHas('tags', function ($q) use ($tags) {
+                        $q->whereIn('name', $tags);
+                    });
+                }
+            }
 
-        $sort = $request->input('sort', 'created_at');
-        $direction = $request->input('direction', 'desc');
-        $query->orderBy($sort, $direction);
+            $sort = $request->input('sort', 'created_at');
+            $direction = $request->input('direction', 'desc');
+            $query->orderBy($sort, $direction);
 
-        return response()->json(
-            $query->with('tags')
-                ->paginate(12)
-                ->through(function ($note) {
+            $paginator = $query->with('tags')->paginate(self::PER_PAGE);
+
+            return response()->json([
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'data' => $paginator->through(function ($note) {
                     return [
                         'id' => $note->id,
                         'title' => $note->title,
+                        'thumbnail' => $note->thumbnail,
                         'created_at' => $note->created_at,
                         'tags' => $note->tags,
-                        'user_id' => $note->user_id
+                        'user_id' => $note->user_id 
                     ];
-                })
-        );
+                })->toArray()
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Note API Error: ' . $e->getMessage());
+            return response()->json(['error' => 'An error occurred while fetching notes'], 500);
+        }
     }
 
 

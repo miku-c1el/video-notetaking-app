@@ -176,6 +176,7 @@ watch(tagInput, (newValue) => {
 });
 
 const closeModal = () => {
+    tagInput.value = '';
     emit('update:modelValue', false);
 };
 
