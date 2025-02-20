@@ -21,8 +21,9 @@ class NoteController extends Controller
     // NoteController.php
     public function index(Request $request)
     {
+        $noteCount = Note::where('user_id', auth()->id())->count();
         $query = Note::where('user_id', auth()->id());
-
+        
         if ($request->has('tags')) {
             $selected_tags = $request->tags;
             if (!empty($selected_tags)) {
@@ -33,8 +34,13 @@ class NoteController extends Controller
         }
 
         $sort = $request->input('sort', 'created_at');
-        $direction = $request->input('direction', 'desc');
-        $query->orderBy($sort, $direction);
+
+        $query->when($sort === 'created_at', function ($query) {
+            return $query->orderBy('created_at', 'desc');
+        })
+        ->when($sort === 'last_opened', function ($query) {
+            return $query->orderBy('updated_at', 'desc');
+        });
     
         $paginator = $query->with('tags')
             ->latest()
@@ -50,8 +56,9 @@ class NoteController extends Controller
                 'tags' => $note->tags,
                 'user_id' => $note->user_id
             ])->toArray(),
+            'noteCount' => $noteCount,
             'tags' => $all_tags,
-            'filters' => $request->only(['tags', 'sort', 'direction']),
+            'filters' => $request->only(['tags', 'sort']),
             'pagination' => [
                 'current_page' => $paginator->currentPage(),
                 'per_page' => self::PER_PAGE,
@@ -151,6 +158,7 @@ class NoteController extends Controller
         $moments = Moment::where('note_id', $id)
             ->orderBy('timestamp', 'asc')
             ->get();
+            
         return Inertia::render('Note/Create', [
             'note' => $note, 
             'moments' => $moments

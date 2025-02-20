@@ -125,11 +125,11 @@ watch(() => props.note.youtubeVideo_id, () => {
     }
 });
 
-watch(() => props.note.id, () => {
-    if (props.note.id) {
-        getTags();
-    }
-});
+// watch(() => props.note.id, () => {
+//     if (props.note.id) {
+//         getTags();
+//     }
+// });
 
 const refreshTags = () => {
     if (props.note.id) {

@@ -1,8 +1,12 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useForm, router } from '@inertiajs/vue3';
-import Modal from '@/Components/Modal.vue';
+// import Modal from '@/Components/Modal.vue';
 import TagFilterModal from '@/Components/TagFilterModal.vue';
+import SortButton from '@/Components/SortButton.vue';
+import NoteMenuDropdown from '@/Components/NoteMenuDropdown.vue';
+import NoteEditModal from '@/Components/NoteEditModal.vue';
+import axios from 'axios';
 
 const props = defineProps({
   initialNotes: {
@@ -12,6 +16,7 @@ const props = defineProps({
       data: [],
     })
   },
+  noteCount: Number,
   tags: Array,
   filters: {
     type: Object,
@@ -20,7 +25,7 @@ const props = defineProps({
   pagination: {
     type: Object,
     default: () => ({
-      current_page: 1,
+      current_page: 0,
       per_page: 12,
       total: 0,
       last_page: 1,
@@ -32,13 +37,18 @@ const props = defineProps({
 // データの初期化
 const notes = ref(props.initialNotes?.data ?? []);
 const activeTab = ref('my-notes');
-const page = ref(props.pagination.current_page || 1);
+const page = ref(props.pagination.current_page || 0);
 const isLoading = ref(false);
 const hasMore = ref(props.pagination.has_more || false);
 const loadingElement = ref(null);
 const showFilterModal = ref(false);
 const selectedTags = ref(props.filters?.tags || []);
-// ※ 書き直し必要
+const showEditModal = ref(false);
+const selectedNote = ref(null);
+const cleanup = ref(null);
+const tags = ref(props.tags || []);
+
+
 const displayedNotes = computed(() => {
   if (!Array.isArray(notes.value)) {
     console.warn('notes.value is not an array:', notes.value);
@@ -70,7 +80,7 @@ const formatTimeAgo = (date) => {
 const switchTab = async (newTab) => {
   activeTab.value = newTab;
   notes.value = [];  // ノートをリセット
-  page.value = 1;    // ページをリセット
+  page.value = 0;    // ページをリセット
   await loadMoreNotes(); // 新しいデータを取得
 };
 
@@ -79,11 +89,25 @@ const observer = ref(null);
 onMounted(async () => {
   await nextTick(); 
   setupInfiniteScroll();
+    // Inertiaのナビゲーションイベントをリッスン
+    const unsubscribe = router.on('before', (event) => {
+      // ブラウザバックの検出
+      if (event.detail.visit.type === 'back') {
+          // 最新のデータを再取得
+          resetData();
+      }
+    });
+    
+    // コンポーネントのクリーンアップ時に解除できるように保存
+    cleanup.value = unsubscribe;
 });
 
 onUnmounted(() => {
   if (observer.value) {
     observer.value.disconnect();
+  }
+  if (cleanup.value) {
+    cleanup.value();
   }
 });
 
@@ -149,14 +173,6 @@ const resetData = () => {
   loadMoreNotes();
 };
 
-async function filterByTag(tag) {
-  selectedTag.value=tag===selectedTag.value? null:tag;
-  notes.value=[];
-  page.value=1;
-  noMoreData.value=false;
-  await async();
-}
-
 // Watch for filter changes
 watch(selectedTags, resetData);
 watch(activeTab, resetData);
@@ -186,6 +202,65 @@ const showNote = (note) => {
     );
 };
 
+const handleEditClick = (note) => {
+  selectedNote.value = note;
+  showEditModal.value = true;
+};
+
+const handleDeleteNote = (noteId) => {
+  router.delete(`/notes/${noteId}`, {
+    preserveScroll: true,
+    onSuccess: () => {
+      // ノート一覧を更新
+      notes.value = notes.value.filter(note => note.id !== noteId);
+    }
+  });
+};
+
+const closeEditModal = () => {
+  showEditModal.value = false;
+  selectedNote.value = null;
+  editMode.value = null;
+};
+
+const handleNoteUpdate = (updatedNote) => {
+    console.log('hello');
+    console.log(updatedNote);
+    if (!updatedNote || !updatedNote.id) {
+        console.warn('Invalid updated note received:', updatedNote);
+        return;
+    }
+    
+    // 現在の表示中のノートリストを更新
+    notes.value = notes.value.map(note => 
+      note.id === updatedNote.id 
+        ? { 
+            ...note, 
+            ...updatedNote,
+            tags: updatedNote.tags || note.tags // タグ情報も更新
+          } 
+        : note
+    );
+    // refreshTags();
+};
+
+// タグ更新用の関数
+const refreshTags = () => {
+    if (selectedNote.value.id) {
+      console.log('getting tags...');
+        getTags();
+    }
+};
+
+const getTags = () => {
+    axios.get(route('tags.index'), { 
+        
+        params: { note_id: selectedNote.value.id }
+    })
+    .then(response => {
+        tags.value = response.data.tags;
+    });
+};
 </script>
 
 <template>
@@ -239,27 +314,28 @@ const showNote = (note) => {
             <!-- ノート一覧 -->
             <div>
                 <div class="flex justify-between items-center mb-4">
-                    <div class="text-sm text-gray-500">{{ displayedNotes.length }} 項目</div>
-                    <div class="flex items-center space-x-4">
-                        <button 
-                          @click="showFilterModal = true" 
-                          class="text-gray-600 flex items-center">
-                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
-                            </svg>
-                            フィルタ
-                        </button>
-                        <TagFilterModal
-                          :is-open="showFilterModal"
-                          :initial-selected-tags="selectedTags"
-                          :available-tags="props.tags"
-                          @close="showFilterModal = false"
-                          @update:selected-tags="selectedTags = $event"
-                        />
+                  <div class="text-sm text-gray-500">{{ props.noteCount }} 項目</div>
+                  <div class="flex items-center space-x-4">
+                      <button 
+                        @click="showFilterModal = true" 
+                        class="text-gray-600 flex items-center">
+                          <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                          </svg>
+                          フィルタ
+                      </button>
+                      <TagFilterModal
+                        :is-open="showFilterModal"
+                        :initial-selected-tags="selectedTags"
+                        :available-tags="props.tags"
+                        @close="showFilterModal = false"
+                        @update:selected-tags="selectedTags = $event"
+                      />
 
-                        <button class="text-gray-600 flex items-center">
-                            最後に開いた
-                        </button>
+                      <SortButton 
+                      :initial-sort="props.filters.sort"
+                      :initial-selected-tags="selectedTags"
+                      />
                     </div>
                 </div>
   
@@ -285,13 +361,12 @@ const showNote = (note) => {
                                 <!-- ノート情報 -->
                                 <div class="flex justify-between items-start">
                                     <h3 class="text-md font-medium text-gray-900 mb-1">{{ note.title }}</h3>
-                                    <button class="text-gray-400 hover:text-gray-600">
-                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                                        </svg>
-                                    </button>
+                                    <NoteMenuDropdown
+                                      :note="note"
+                                      @edit="() => handleEditClick(note)"
+                                      @delete="handleDeleteNote"
+                                    />
                                 </div>
-        
                                 <div class="text-sm text-gray-500 mb-2">
                                 {{ formatTimeAgo(note.created_at) }}
                                 </div>
@@ -309,6 +384,7 @@ const showNote = (note) => {
                             </div>
                         </div>
                     </div>
+
                 
                     <div v-else class="text-center py-12">
                         <div class="text-gray-400 mb-2">
@@ -330,6 +406,15 @@ const showNote = (note) => {
                 <div v-if="isLoading" class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
             </div>
         </div>
+        <!-- 編集モーダル -->
+        <NoteEditModal
+          v-model="showEditModal"
+          :note="selectedNote"
+          :tags="selectedNote?.tags"
+          @updated="handleNoteUpdate"
+          @tag-updated="refreshTags"
+          @close="closeEditModal"
+        />
     </div>
 </template>
 

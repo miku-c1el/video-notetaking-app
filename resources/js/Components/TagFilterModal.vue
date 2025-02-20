@@ -43,7 +43,7 @@ const applyFilters = () => {
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto">
     <!-- Backdrop -->
-    <div class="fixed inset-0 bg-black bg-opacity-1" @click="emit('close')"></div>
+    <div class="fixed inset-0 bg-black bg-opacity-50" @click="emit('close')"></div>
 
     <!-- Modal -->
     <div class="relative min-h-screen flex items-center justify-center p-4">

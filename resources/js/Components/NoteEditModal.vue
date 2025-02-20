@@ -19,11 +19,10 @@ const props = defineProps({
         type: Object,
         required: true
     },
-    tags: Array
+    tags : Array
 });
 
-const emit = defineEmits(['update:modelValue', 'tag-updated']);
-
+const emit = defineEmits(['update:modelValue', 'tag-updated', 'updated', 'close']);
 const title = ref(props.note?.title || '');
 const tagInput = ref('');
 const searchResults = ref([]);
@@ -72,7 +71,10 @@ const debouncedSaveTitle = debounce(async (newTitle) => {
         { 
             preserveState: true,
             preserveScroll: true,
-            only: ['note']
+            // only: ['note'],
+            onSuccess: (response) => {
+                emit('updated', { id: props.note.id, title: newTitle });
+            }
         }
     );
 }, 500);
@@ -157,10 +159,11 @@ const handleTagUpdate = async (newName) => {
     }, {
         preserveState: true,
         preserveScroll: true,
-        onSuccess: () => {
+        onSuccess: (response) => {
             showTagEditModal.value = false;
             selectedTagForEdit.value = null;
             emit('tag-updated');
+            emit('updated', props.note);
             tagInput.value = '';
         }
     });
@@ -213,11 +216,32 @@ const cancelDelete = () => {
     tagToDelete.value = null;
     tagInput.value = '';
 };
+
+// モーダルが開かれるたびにタイトルを更新
+watch(() => props.modelValue, (newValue) => {
+    if (newValue && props.note) {
+        title.value = props.note.title || '';
+    }
+});
+
+// モーダルが開かれるたびにタイトルを更新
+watch(() => props.modelValue, (newValue) => {
+    if (newValue && props.note) {
+        title.value = props.note.title || '';
+    }
+});
+
+// noteプロパティの変更も監視
+watch(() => props.note, (newNote) => {
+    if (newNote) {
+        title.value = newNote.title || '';
+    }
+});
 </script>
 
 <template>
     <TransitionRoot appear :show="modelValue" as="div">
-        <Dialog as="div" @close="closeModal" class="relative z-[100]">
+        <Dialog as="div" @close="closeModal" class="relative z-[200]">
             <!-- モーダルの背景 -->
             <TransitionChild
                 as="div"

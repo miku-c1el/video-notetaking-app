@@ -21,6 +21,19 @@ class Moment extends Model
         'timestamp' => 'integer',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($moment) {
+            $moment->note->touch();
+        });
+
+        static::deleting(function ($moment) {
+            $moment->note->touch(); 
+        });
+    }
+
     public function note()
     {
         return $this->belongsTo(Note::class);
