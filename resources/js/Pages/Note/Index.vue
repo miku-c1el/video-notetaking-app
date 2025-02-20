@@ -224,8 +224,7 @@ const closeEditModal = () => {
 };
 
 const handleNoteUpdate = (updatedNote) => {
-    console.log('hello');
-    console.log(updatedNote);
+
     if (!updatedNote || !updatedNote.id) {
         console.warn('Invalid updated note received:', updatedNote);
         return;
@@ -247,8 +246,12 @@ const handleNoteUpdate = (updatedNote) => {
 // タグ更新用の関数
 const refreshTags = () => {
     if (selectedNote.value.id) {
-      console.log('getting tags...');
         getTags();
+    }
+
+    const noteIndex = notes.value.findIndex(n => n.id === selectedNote.value.id);
+    if (noteIndex !== -1) {
+      notes.value[noteIndex].tags = selectedNote.value.tags;
     }
 };
 
@@ -258,7 +261,9 @@ const getTags = () => {
         params: { note_id: selectedNote.value.id }
     })
     .then(response => {
-        tags.value = response.data.tags;
+      if (selectedNote.value) {
+        selectedNote.value.tags = response.data.tags;
+      }
     });
 };
 </script>
