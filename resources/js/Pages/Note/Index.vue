@@ -89,17 +89,6 @@ const observer = ref(null);
 onMounted(async () => {
   await nextTick(); 
   setupInfiniteScroll();
-    // Inertiaのナビゲーションイベントをリッスン
-    const unsubscribe = router.on('before', (event) => {
-      // ブラウザバックの検出
-      if (event.detail.visit.type === 'back') {
-          // 最新のデータを再取得
-          resetData();
-      }
-    });
-    
-    // コンポーネントのクリーンアップ時に解除できるように保存
-    cleanup.value = unsubscribe;
 });
 
 onUnmounted(() => {
@@ -236,11 +225,10 @@ const handleNoteUpdate = (updatedNote) => {
         ? { 
             ...note, 
             ...updatedNote,
-            tags: updatedNote.tags || note.tags // タグ情報も更新
+
           } 
         : note
     );
-    // refreshTags();
 };
 
 // タグ更新用の関数
@@ -248,23 +236,26 @@ const refreshTags = () => {
     if (selectedNote.value.id) {
         getTags();
     }
+    getTags().then(() => {
+        Inertia.reload({ only: ['notes'] });
+    });
 
-    const noteIndex = notes.value.findIndex(n => n.id === selectedNote.value.id);
-    if (noteIndex !== -1) {
-      notes.value[noteIndex].tags = selectedNote.value.tags;
-    }
+    // const noteIndex = notes.value.findIndex(n => n.id === selectedNote.value.id);
+    // if (noteIndex !== -1) {
+    //   notes.value[noteIndex].tags = selectedNote.value.tags;
+    // }
+    // Inertia.reload({ only: ['notes'] });
 };
 
-const getTags = () => {
-    axios.get(route('tags.index'), { 
-        
-        params: { note_id: selectedNote.value.id }
-    })
-    .then(response => {
-      if (selectedNote.value) {
-        selectedNote.value.tags = response.data.tags;
-      }
-    });
+const getTags = async () => {
+    try {
+        const response = await axios.get(route('tags.index'), {
+            params: { note_id: selectedNote.value.id }
+        });
+        selectedNote.value.tags = response.data.tags; // Ensure the modal updates
+    } catch (error) {
+        console.error("Failed to fetch tags:", error);
+    }
 };
 </script>
 
