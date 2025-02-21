@@ -81,6 +81,7 @@ const switchTab = async (newTab) => {
   activeTab.value = newTab;
   notes.value = [];  // ノートをリセット
   page.value = 0;    // ページをリセット
+  selectedTags.value = [];
   await loadMoreNotes(); // 新しいデータを取得
 };
 
@@ -132,11 +133,13 @@ const loadMoreNotes = async () => {
     const response = await fetch(
       `/api/notes?page=${page.value}&tab=${activeTab.value}&tags=${encodeURIComponent(JSON.stringify(selectedTags.value))}`
     );
+    
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
+
     if (data.data.data && Array.isArray(data.data.data) && data.data.data.length > 0) {
       notes.value = Array.isArray(notes.value) 
         ? [...notes.value, ...data.data.data]
@@ -239,12 +242,6 @@ const refreshTags = () => {
     getTags().then(() => {
         Inertia.reload({ only: ['notes'] });
     });
-
-    // const noteIndex = notes.value.findIndex(n => n.id === selectedNote.value.id);
-    // if (noteIndex !== -1) {
-    //   notes.value[noteIndex].tags = selectedNote.value.tags;
-    // }
-    // Inertia.reload({ only: ['notes'] });
 };
 
 const getTags = async () => {
@@ -257,6 +254,19 @@ const getTags = async () => {
         console.error("Failed to fetch tags:", error);
     }
 };
+
+// カテゴリの状態
+const selectedCategory = ref('Business & Finance');
+const categories = ref([
+  'Business & Finance',
+  'Learning Resources',
+  'Health & Wellness',
+  'Career Growth',
+  'News & Current Affairs'
+]);
+
+
+
 </script>
 
 <template>
@@ -329,7 +339,7 @@ const getTags = async () => {
                       />
 
                       <SortButton 
-                      :initial-sort="props.filters.sort"
+                      :initial-sort="String(props.filters.sort || 'created_at')"
                       :initial-selected-tags="selectedTags"
                       />
                     </div>
@@ -405,7 +415,7 @@ const getTags = async () => {
         <!-- 編集モーダル -->
         <NoteEditModal
           v-model="showEditModal"
-          :note="selectedNote"
+          :note="selectedNote || {}"
           :tags="selectedNote?.tags"
           @updated="handleNoteUpdate"
           @tag-updated="refreshTags"

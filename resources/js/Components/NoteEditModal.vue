@@ -16,8 +16,8 @@ import { XMarkIcon } from '@heroicons/vue/24/outline';
 const props = defineProps({
     modelValue: Boolean,
     note: {
-        type: Object,
-        required: true
+        type: [Object, null],
+        default: null
     },
     tags : Array
 });

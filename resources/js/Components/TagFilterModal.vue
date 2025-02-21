@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -15,8 +15,11 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'update:selectedTags']);
+const selectedTags = ref([...props.initialSelectedTags]);
 
-const selectedTags = ref(props.initialSelectedTags || []);
+watch(() => props.initialSelectedTags, (newTags) => {
+  selectedTags.value = [...newTags]; // Reset selectedTags when prop changes
+}, { immediate: true });
 
 const toggleTag = (tag) => {
   const index = selectedTags.value.indexOf(tag.name);
@@ -36,6 +39,7 @@ const applyFilters = () => {
     route('notes.index'),
     { tags: selectedTags.value },
   );
+  emit('update:selectedTags', selectedTags.value);
   emit('close');
 };
 </script>

@@ -58,7 +58,10 @@ class NoteController extends Controller
             ])->toArray(),
             'noteCount' => $noteCount,
             'tags' => $all_tags,
-            'filters' => $request->only(['tags', 'sort']),
+            'filters' => [
+                'tags' => $request->input('tags', []),
+                'sort' => (string) $request->input('sort', 'created_at')
+            ],
             'pagination' => [
                 'current_page' => $paginator->currentPage(),
                 'per_page' => self::PER_PAGE,
@@ -73,11 +76,9 @@ class NoteController extends Controller
     {
         try {
             $query = Note::query();
-            
             if ($request->input('tab') === 'my-notes') {
                 $query->where('user_id', auth()->id());
             }
-
             if ($request->has('tags')) {
                 $tags = json_decode($request->tags, true);
                 if (!empty($tags)) {
@@ -108,7 +109,6 @@ class NoteController extends Controller
                 })->toArray()
             ]);
         } catch (\Exception $e) {
-            \Log::error('Note API Error: ' . $e->getMessage());
             return response()->json(['error' => 'An error occurred while fetching notes'], 500);
         }
     }
@@ -158,7 +158,7 @@ class NoteController extends Controller
         $moments = Moment::where('note_id', $id)
             ->orderBy('timestamp', 'asc')
             ->get();
-            
+
         return Inertia::render('Note/Create', [
             'note' => $note, 
             'moments' => $moments
