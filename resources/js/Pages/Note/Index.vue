@@ -82,6 +82,9 @@ const switchTab = async (newTab) => {
   notes.value = [];  // ノートをリセット
   page.value = 0;    // ページをリセット
   selectedTags.value = [];
+  if (newTab === 'explore') {
+    selectedCategory.value = 'Career'; // Default category
+  }
   await loadMoreNotes(); // 新しいデータを取得
 };
 
@@ -130,9 +133,14 @@ const loadMoreNotes = async () => {
   isLoading.value = true;
   page.value += 1;
   try {
-    const response = await fetch(
-      `/api/notes?page=${page.value}&tab=${activeTab.value}&tags=${encodeURIComponent(JSON.stringify(selectedTags.value))}`
-    );
+    const params = new URLSearchParams({
+      page: page.value,
+      tab: activeTab.value,
+      tags: JSON.stringify(selectedTags.value),
+      category: activeTab.value === 'explore' ? selectedCategory.value : ''
+    });
+
+    const response = await fetch(`/api/notes?${params}`);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -256,17 +264,59 @@ const getTags = async () => {
 };
 
 // カテゴリの状態
-const selectedCategory = ref('Business & Finance');
+const selectedCategory = ref('Career');
 const categories = ref([
-  'Business & Finance',
-  'Learning Resources',
-  'Health & Wellness',
-  'Career Growth',
-  'News & Current Affairs'
+  'Career',
+  'Programming',
+  'English',
+  'Piano',
 ]);
 
+// Add category selection handler
+const loadNotesByCategory = async (category) => {
+  selectedCategory.value = category;
+  notes.value = [];
+  page.value = 0;
+  await loadMoreNotes();
+};
 
+const loadMoreNotes = async () => {
+  if (isLoading.value || !hasMore.value) return;
 
+  isLoading.value = true;
+  page.value += 1;
+  try {
+    const params = new URLSearchParams({
+      page: page.value,
+      tab: activeTab.value,
+      tags: JSON.stringify(selectedTags.value),
+      category: activeTab.value === 'explore' ? selectedCategory.value : ''
+    });
+
+    const response = await fetch(`/api/notes?${params}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.data.data && Array.isArray(data.data.data) && data.data.data.length > 0) {
+      notes.value = Array.isArray(notes.value) 
+        ? [...notes.value, ...data.data.data]
+        : data.data.data;
+
+      hasMore.value = data.current_page < data.last_page;
+    } else {
+      hasMore.value = false;
+    }
+  } catch (error) {
+    console.error('Failed to load more notes:', error);
+    hasMore.value = false;
+  } finally {
+    isLoading.value = false;
+  }
+};
 </script>
 
 <template>
@@ -316,10 +366,33 @@ const categories = ref([
                     </button>
                 </nav>
             </div>
+            
+            <!-- エクスプロアタブのカテゴリボタン -->
+            <div v-if="activeTab === 'explore'" class="mb-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">カテゴリ</h2>
+                <div class="flex flex-wrap gap-3">
+                    <button
+                        v-for="category in categories"
+                        :key="category"
+                        @click="selectCategory(category)"
+                        :class="[
+                            'px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200',
+                            selectedCategory === category
+                                ? 'bg-blue-900 text-white'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ]"
+                    >
+                        {{ category }}
+                    </button>
+                </div>
+            </div>
     
             <!-- ノート一覧 -->
             <div>
-                <div class="flex justify-between items-center mb-4">
+                <div 
+                  v-if="activeTab === 'my-notes'"
+                  class="flex justify-between items-center mb-4"
+                >
                   <div class="text-sm text-gray-500">{{ props.noteCount }} 項目</div>
                   <div class="flex items-center space-x-4">
                       <button 

@@ -17,8 +17,8 @@ class VideoService
 
     public function __construct()
     {
-        $this->baseUrl = config('services.youtube.base_url');;
-        $this->apiKey = config('services.youtube.api_key');;
+        $this->baseUrl = config('services.youtube.base_url');
+        $this->apiKey = config('services.youtube.api_key');
         $this->type = 'video';
         $this->part = 'snippet';
     }
