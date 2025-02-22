@@ -15,7 +15,7 @@ const searchQuery = ref(props.query || '');
 
 const executeSearch = () => {
     if (searchQuery.value.trim()) {
-        router.get(route('videos.index'), { query: searchQuery.value });
+        router.get(route('videos.index', { query: searchQuery.value }));
     }
 };
 

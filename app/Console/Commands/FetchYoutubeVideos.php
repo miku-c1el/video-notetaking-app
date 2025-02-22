@@ -3,11 +3,20 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\ExploreVideo;
 use Illuminate\Support\Facades\Http;
+use App\Services\VideoService;
+use App\Models\ExploreVideo;
 
 class FetchYoutubeVideos extends Command
 {
+    protected $videoService;
+
+    public function __construct(VideoService $videoService)
+    {
+        parent::__construct(); 
+        $this->videoService = $videoService;
+    }
+
     /**
      * The name and signature of the console command.
      *
@@ -42,7 +51,7 @@ class FetchYoutubeVideos extends Command
             if ($response->successful()) {
                 $videoData = $response->json();
                 if (!empty($videoData['items'])) {
-                    $video->video_resource = $videoData['items'][0];
+                    $video->video_resource = $this->videoService->formatExploreVideo($videoData['items'][0]);
                     $video->updated_at = now();
                     $video->save();
                 }

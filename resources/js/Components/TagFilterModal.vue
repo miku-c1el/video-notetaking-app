@@ -32,6 +32,7 @@ const toggleTag = (tag) => {
 
 const clearSelection = () => {
   selectedTags.value = [];
+  applyFilters();
 };
 
 const applyFilters = () => {

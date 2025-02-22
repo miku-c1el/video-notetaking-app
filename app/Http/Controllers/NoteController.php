@@ -129,6 +129,7 @@ class NoteController extends Controller
     public function store(Request $request)
     {
         $video = $request->input('video');
+    
         Video::updateOrCreate(
             ['youtubeVideo_id' => $video['videoId']],
             [

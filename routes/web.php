@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PostsController;
 use App\Http\Controllers\VideoController;
+use App\Http\Controllers\ExploreVideoController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\MomentController;
 use App\Http\Controllers\TagController;
@@ -56,6 +57,7 @@ require __DIR__.'/auth.php';
 */
 
 Route::get('/videos', [VideoController::class, 'index'])->name('videos.index');
+Route::get('/explore/videos', [ExploreVideoController::class, 'index'])->name('exploreVideos.index');
 
 // note関連
 Route::middleware(['auth'])->group(function () {

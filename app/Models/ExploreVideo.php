@@ -11,6 +11,6 @@ class ExploreVideo extends Model
 
     protected $fillable = ['youtubeVideo_id', 'video_resource', 'category'];
     protected $casts = [
-        'video_resource' => 'json',
+        'video_resource' => 'array',
     ];
 }

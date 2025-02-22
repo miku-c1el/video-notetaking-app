@@ -108,6 +108,17 @@ class VideoService
         ->toArray();
     }
 
+    public function formatExploreVideo($video)
+    {
+        return [
+            'videoId' => $video['id'],
+            'title' => $video['snippet']['title'],
+            'publishedAt' => $video['snippet']['publishedAt'],
+            'thumbnail' => $video['snippet']['thumbnails']['high']['url'],
+            'channelTitle' => $video['snippet']['channelTitle'],
+        ];
+    }
+
 //※ 返される値の例
     // [{
     //     "videoId": "yZt4ZOy6Z8c",
