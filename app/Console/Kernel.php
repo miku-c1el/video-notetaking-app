@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('app:fetch-youtube-videos')->daily();
+        $schedule->command('app:clear-expired-cache')->daily();
     }
 
     /**

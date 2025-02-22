@@ -13,6 +13,7 @@ const showModal = ref(false);
 const selectedVideo = ref(null);
 const searchQuery = ref(props.query || '');
 
+// 検索関連
 const executeSearch = () => {
     if (searchQuery.value.trim()) {
         router.get(route('videos.index', { query: searchQuery.value }));
@@ -25,6 +26,7 @@ const handleKeydown = (event) => {
     }
 };
 
+// modal関連
 const openModal = (video) => {
     selectedVideo.value = video;
     showModal.value = true;
@@ -37,14 +39,13 @@ const closeModal = () => {
     document.body.classList.remove('overflow-hidden');
 };
 
-// Cleanup on component unmount
 watchEffect((onCleanup) => {
     onCleanup(() => {
         document.body.classList.remove('overflow-hidden');
     });
 });
 
-// ノート作成処理を追加
+// ノート関連
 const createNote = () => {
     router.post(route('notes.store'), 
         {video: selectedVideo.value}

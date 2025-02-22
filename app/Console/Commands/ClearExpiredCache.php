@@ -3,6 +3,9 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use App\Models\CachedSearchResult;
 
 class ClearExpiredCache extends Command
 {
@@ -18,13 +21,16 @@ class ClearExpiredCache extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Delete expired cache entries from the query cache table';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        //
+        $deleted = CachedSearchResult::where('expires_at', '<', Carbon::now('Asia/Tokyo'))
+        ->delete();
+
+        $this->info("Deleted {$deleted} expired cache entries.");
     }
 }

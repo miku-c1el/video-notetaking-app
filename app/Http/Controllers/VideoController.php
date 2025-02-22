@@ -57,15 +57,4 @@ class VideoController extends Controller
         $videos = $this->videoService->searchVideos($query);
         return response()->json($videos);
     }
-
-    // public function show(Video $video)
-    // {
-    //     return Inertia::render('Video/Show', [
-    //         'video' => $video->load(['user']),
-    //         'moments' => $video->moments()
-    //             ->orderBy('timestamp')
-    //             ->get()
-    //     ]);
-    // }
-
 }
