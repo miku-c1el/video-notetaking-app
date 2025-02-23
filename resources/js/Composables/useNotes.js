@@ -42,10 +42,10 @@ export function useNotes(initialNotes, pagination, filters) {
         }
     };
 
-    const deleteNote = (id) => {
-        if (confirm('このノートを削除してもよろしいですか？')) {
-            router.delete(`/notes/${id}`);
-        }
+    const showNote = (note) => {
+        router.get(route('notes.show', note.id), 
+              {noteId: note.id}
+          );
     };
 
     const handleDeleteNote = (note_id) => {
@@ -74,5 +74,5 @@ export function useNotes(initialNotes, pagination, filters) {
         loadMoreNotes();
     });
 
-    return { notes, isLoading, hasMore, selectedTags, page, loadMoreNotes, deleteNote, handleNoteUpdate, handleDeleteNote };
+    return { notes, isLoading, hasMore, selectedTags, page, loadMoreNotes, handleNoteUpdate, handleDeleteNote, showNote };
 }

@@ -9,6 +9,7 @@ import NoteEditModal from '@/Components/NoteEditModal.vue';
 import Modal from '@/Components/Modal.vue';
 import axios from 'axios';
 import { useNotes } from '@/Composables/useNotes';
+import { useVideos } from '@/Composables/useVideos';
 
 const props = defineProps({
   initialNotes: {
@@ -36,32 +37,38 @@ const props = defineProps({
   }
 });
 
-// Notes Logic
-const { notes, isLoading, hasMore, selectedTags, page, loadMoreNotes, handleNoteUpdate, handleDeleteNote } = useNotes(props.initialNotes, props.pagination, props.filters);
+// Notesロジック
+const { notes, isLoading, hasMore, selectedTags, page, loadMoreNotes, handleNoteUpdate, handleDeleteNote, showNote } = useNotes(props.initialNotes, props.pagination, props.filters);
 
-// 共通の状態
+//Videosロジック
+const { videos, selectedVideo, showModal, selectedCategory, categories, loadVideosByCategory, openModal, closeModal, createNote } = useVideos();
+
+// UIの状態管理
 const activeTab = ref('my-notes');
-const loadingElement = ref(null);
-
-// ノート関連の状態
+const selectedNote = ref(null);
 const showFilterModal = ref(false);
 const showEditModal = ref(false);
 const showDeleteModal = ref(false);
-const selectedNote = ref(null);
 const cleanup = ref(null);
 const tags = ref(props.tags || []);
 
-// 動画関連の状態
-const videos = ref([]);
-const selectedVideo = ref(null);
-const showModal = ref(false);
-const selectedCategory = ref('Career');
-const categories = ref([
-  'Career',
-  'Programming',
-  'English',
-  'Piano',
-]);
+// Infinite Scroll
+const observer = ref(null);
+const loadingElement = ref(null);
+
+onMounted(async () => {
+  await nextTick(); 
+  setupInfiniteScroll();
+});
+
+onUnmounted(() => {
+  if (observer.value) {
+    observer.value.disconnect();
+  }
+  if (cleanup.value) {
+    cleanup.value();
+  }
+});
 
 const formatTimeAgo = (date) => {
   const now = new Date();
@@ -81,12 +88,9 @@ const formatTimeAgo = (date) => {
   return `${Math.floor(diffDays / 365)}年前`;
 };
 
-// タブ切り替え用の関数を追加
+// タブ切り替え用の関数
 const switchTab = async (newTab) => {
   activeTab.value = newTab;
-  // notes.value = [];  // ノートをリセット
-  // page.value = 1;    // ページをリセット
-  // selectedTags.value = [];
 
   if (newTab === 'explore') {
     // エクスプロアタブの初期化
@@ -102,22 +106,6 @@ const switchTab = async (newTab) => {
     await loadMoreNotes();
   }
 };
-
-const observer = ref(null);
-
-onMounted(async () => {
-  await nextTick(); 
-  setupInfiniteScroll();
-});
-
-onUnmounted(() => {
-  if (observer.value) {
-    observer.value.disconnect();
-  }
-  if (cleanup.value) {
-    cleanup.value();
-  }
-});
 
 const setupInfiniteScroll = () => {
   if (observer.value) {
@@ -142,22 +130,9 @@ const setupInfiniteScroll = () => {
   }
 };
 
-
-// Reset data when filters change
-// const resetData = () => {
-//   notes.value = [];
-//   page.value = 1;
-//   hasMore.value = true;
-//   loadMoreNotes();
-// };
-
-// Watch for filter changes
-// watch(selectedTags, resetData);
-// watch(activeTab, resetData);
-
 watch(loadingElement, (newVal) => {
   if (newVal && observer.value) {
-    setupInfiniteScroll(); // 要素が変更されたら再設定
+    setupInfiniteScroll();
   }
 });
 
@@ -166,12 +141,6 @@ const updateSort = async () => {
   page.value = 1;
   noMoreData.value = false;
   await async();
-};
-
-const showNote = (note) => {
-  router.get(route('notes.show', note.id), 
-        {noteId: note.id}
-    );
 };
 
 const handleEditClick = (note) => {
@@ -185,26 +154,6 @@ const closeEditModal = () => {
   editMode.value = null;
 };
 
-// const handleNoteUpdate = (updatedNote) => {
-
-//     if (!updatedNote || !updatedNote.id) {
-//         console.warn('Invalid updated note received:', updatedNote);
-//         return;
-//     }
-    
-//     // 現在の表示中のノートリストを更新
-//     notes.value = notes.value.map(note => 
-//       note.id === updatedNote.id 
-//         ? { 
-//             ...note, 
-//             ...updatedNote,
-
-//           } 
-//         : note
-//     );
-// };
-
-// タグ更新用の関数
 const refreshTags = () => {
     if (selectedNote.value.id) {
         getTags();
@@ -219,43 +168,10 @@ const getTags = async () => {
         const response = await axios.get(route('tags.index'), {
             params: { note_id: selectedNote.value.id }
         });
-        selectedNote.value.tags = response.data.tags; // Ensure the modal updates
+        selectedNote.value.tags = response.data.tags;
     } catch (error) {
         console.error("Failed to fetch tags:", error);
     }
-};
-
-// 動画関連の関数
-const loadVideosByCategory = async (category) => {
-  isLoading.value = true;
-  selectedCategory.value = category;
-  try {
-    const response = await axios.get(route('exploreVideos.index'), {
-      params: { category: category }
-    });
-    videos.value = response.data.videos;
-    console.log(videos);
-  } catch (error) {
-    console.error('Failed to load videos:', error);
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-const openModal = (video) => {
-  selectedVideo.value = video;
-  showModal.value = true;
-};
-
-const closeModal = () => {
-  showModal.value = false;
-  selectedVideo.value = null;
-};
-
-const createNote = () => {
-    router.post(route('notes.store'), 
-        {video: selectedVideo.value}
-    );
 };
 </script>
 
@@ -410,8 +326,7 @@ const createNote = () => {
               </div>
             </Modal>
           </template>
-        
-
+      
           <!-- マイノートタブのコンテンツ -->
           <template v-else>
             <!-- 既存のノート一覧コード -->

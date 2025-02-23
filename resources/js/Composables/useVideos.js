@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import axios from 'axios';
+import { router } from '@inertiajs/vue3';
 
 export function useVideos() {
     const videos = ref([]);
@@ -9,6 +10,7 @@ export function useVideos() {
     const categories = ['Career', 'Programming', 'English', 'Piano'];
 
     const loadVideosByCategory = async (category) => {
+        selectedCategory.value = category;
         try {
             const response = await axios.get(route('exploreVideos.index'), { params: { category } });
             videos.value = response.data.videos;
