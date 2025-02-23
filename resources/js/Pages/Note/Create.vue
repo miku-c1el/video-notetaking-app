@@ -6,16 +6,6 @@ import { ref, onMounted, watch, onUnmounted } from 'vue';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
 
-const isMobile = ref(window.innerWidth < 1024);
-
-const updateScreenSize = () => {
-    isMobile.value = window.innerWidth < 1024;
-};
-
-onUnmounted(() => {
-    window.removeEventListener('resize', updateScreenSize);
-});
-
 const props = defineProps({
     note: {
         type: Object,
@@ -25,12 +15,38 @@ const props = defineProps({
     tags: Array,
 });
 
+const isMobile = ref(window.innerWidth < 1024);
 const player = ref(null);
 const playerReady = ref(false);
 const lastTimestamp = ref(null);
 const isModalOpen = ref(false);
 const tags = ref(props.tags || []);
 const moments = ref(props.moments || []);
+const updateScreenSize = () => {
+    isMobile.value = window.innerWidth < 1024;
+};
+
+onMounted(() => {
+    window.addEventListener('resize', updateScreenSize);
+    // URLからタイムスタンプを取得して保存
+    lastTimestamp.value = getTimestampFromUrl();
+
+    if (props.note.id) {
+        getMoments();
+        getTags();
+    }
+
+    loadYouTubeAPI();
+    if (window.YT && window.YT.Player) {
+        onYouTubeIframeAPIReady();
+    } else {
+        window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+    }
+});
+
+onUnmounted(() => {
+    window.removeEventListener('resize', updateScreenSize);
+});
 
 const getMoments = () => {
     axios.get(route('moments.index'), { 
@@ -83,7 +99,6 @@ const getCurrentTime = () => {
     }
     return 0;
 };
-
 defineExpose({ getCurrentTime });
 
 // 保存された時間位置にジャンプする関数
@@ -101,35 +116,11 @@ const getTimestampFromUrl = () => {
     return timestamp ? parseFloat(timestamp) : null;
 };
 
-onMounted(() => {
-    window.addEventListener('resize', updateScreenSize);
-    // URLからタイムスタンプを取得して保存
-    lastTimestamp.value = getTimestampFromUrl();
-
-    if (props.note.id) {
-        getMoments();
-        getTags();
-    }
-
-    loadYouTubeAPI();
-    if (window.YT && window.YT.Player) {
-        onYouTubeIframeAPIReady();
-    } else {
-        window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
-    }
-});
-
 watch(() => props.note.youtubeVideo_id, () => {
     if (window.YT && props.note.youtubeVideo_id) {
         onYouTubeIframeAPIReady();
     }
 });
-
-// watch(() => props.note.id, () => {
-//     if (props.note.id) {
-//         getTags();
-//     }
-// });
 
 const refreshTags = () => {
     if (props.note.id) {

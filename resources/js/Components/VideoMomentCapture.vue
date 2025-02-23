@@ -13,15 +13,14 @@ const props = defineProps({
   moments: Array,
 });
 
-const moments = ref(props.moments.map(moment => ({
-  ...moment,
-  isEditing: false
-})));
-
 const title = ref('');
 const showDuplicateAlert = ref(false);
 const showDeleteConfirm = ref(false);
 const momentToDelete = ref(null);
+const moments = ref(props.moments.map(moment => ({
+  ...moment,
+  isEditing: false
+})));
 
 const createMoment = async () => {
   const currentTime = props.getCurrentTime();
@@ -31,8 +30,7 @@ const createMoment = async () => {
       showDuplicateWarning();
       return;
     }
-
-
+    
   try {
     const response = await axios.post(route('moments.store'), {
       noteId: props.noteId,

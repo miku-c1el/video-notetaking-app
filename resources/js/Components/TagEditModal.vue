@@ -11,7 +11,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:modelValue', 'save']);
-
 const tagName = ref('');
 
 // タグが変更されたときに tagName を更新
