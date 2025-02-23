@@ -75,10 +75,8 @@ class NoteController extends Controller
     public function apiIndex(Request $request)
     {
         try {
-            $query = Note::query();
-            if ($request->input('tab') === 'my-notes') {
-                $query->where('user_id', auth()->id());
-            }
+            $query = Note::where('user_id', auth()->id());
+
             if ($request->has('tags')) {
                 $tags = json_decode($request->tags, true);
                 if (!empty($tags)) {
@@ -97,16 +95,7 @@ class NoteController extends Controller
             return response()->json([
                 'current_page' => $paginator->currentPage(),
                 'last_page' => $paginator->lastPage(),
-                'data' => $paginator->through(function ($note) {
-                    return [
-                        'id' => $note->id,
-                        'title' => $note->title,
-                        'thumbnail' => $note->thumbnail,
-                        'created_at' => $note->created_at,
-                        'tags' => $note->tags,
-                        'user_id' => $note->user_id 
-                    ];
-                })->toArray()
+                'notes' => $paginator->items(),
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An error occurred while fetching notes'], 500);
@@ -193,8 +182,7 @@ class NoteController extends Controller
      */
     public function destroy(string $id)
     {
-        $this->authorize('delete', $note);
-        $note->delete();
+        Note::destroy($id);
         return redirect()->back();
     }
 }

@@ -2,21 +2,18 @@
 import { ref } from 'vue';
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue';
 import { EllipsisHorizontalIcon } from '@heroicons/vue/24/outline';
+import DeleteNoteModal from '@/Components/DeleteNoteModal.vue';
 
 const props = defineProps({
   note: {
     type: Object,
     required: true
-  }
+  },
+  showDeleteModal: Boolean
 });
 
 const emit = defineEmits(['edit', 'delete']);
-
-const handleDelete = () => {
-  if (confirm('このノートを削除してもよろしいですか？')) {
-    emit('delete', props.note.id);
-  }
-};
+const showDeleteModal = ref(false);
 </script>
 
 <template>
@@ -49,7 +46,7 @@ const handleDelete = () => {
             </MenuItem>
             <MenuItem v-slot="{ active }">
               <button
-                @click="handleDelete"
+                @click="showDeleteModal = true"
                 :class="[
                   active ? 'bg-gray-100 text-red-600' : 'text-red-500',
                   'group flex w-full items-center rounded-md px-2 py-2 text-sm'
@@ -62,5 +59,11 @@ const handleDelete = () => {
         </MenuItems>
       </transition>
     </Menu>
+    <DeleteNoteModal
+      :is-open="showDeleteModal"
+      :note="note"
+      @close="showDeleteModal = false"
+      @delete="(note_id) => emit('delete', note_id)"
+    />
   </div>
 </template>

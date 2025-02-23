@@ -43,7 +43,7 @@ const closeModal = () => {
         <Dialog 
             as="div" 
             @close="closeModal" 
-            class="relative z-[190]"
+            class="relative z-[250]"
         >
             <TransitionChild
                 as="template"

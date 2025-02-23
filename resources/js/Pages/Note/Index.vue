@@ -8,7 +8,7 @@ import NoteMenuDropdown from '@/Components/NoteMenuDropdown.vue';
 import NoteEditModal from '@/Components/NoteEditModal.vue';
 import Modal from '@/Components/Modal.vue';
 import axios from 'axios';
-import { useNotes } from '@/Composables/useNote';
+import { useNotes } from '@/Composables/useNotes';
 
 const props = defineProps({
   initialNotes: {
@@ -22,7 +22,7 @@ const props = defineProps({
   tags: Array,
   filters: {
     type: Object,
-    default: () => ({})
+    default: () => ({tags: []})
   },
   pagination: {
     type: Object,
@@ -36,18 +36,26 @@ const props = defineProps({
   }
 });
 
-// Notesロジック
-const { notes, displayedNotes, isLoading, hasMore, loadMoreNotes, deleteNote, handleNoteUpdate } = useNotes(props.initialNotes, props.pagination, props.filters);
+// Notes Logic
+const { notes, isLoading, hasMore, selectedTags, page, loadMoreNotes, handleNoteUpdate } = useNotes(props.initialNotes, props.pagination, props.filters);
+
+// const { notes, displayedNotes, isLoading, hasMore, loadMoreNotes, deleteNote, handleNoteUpdate } = useNotes(props.initialNotes, props.pagination, props.filters);
+
+
 
 // 共通の状態
 const activeTab = ref('my-notes');
-const page = ref(props.pagination.current_page || 0);
+// const isLoading = ref(false);
+// const page = ref(props.pagination.current_page || 0);
+// const hasMore = ref(props.pagination.has_more || false);
 const loadingElement = ref(null);
 
 // ノート関連の状態
+// const notes = ref(props.initialNotes?.data || []);
 const showFilterModal = ref(false);
-const selectedTags = ref(props.filters?.tags || []);
+// const selectedTags = ref(props.filters?.tags || []);
 const showEditModal = ref(false);
+const showDeleteModal = ref(false);
 const selectedNote = ref(null);
 const cleanup = ref(null);
 const tags = ref(props.tags || []);
@@ -63,7 +71,6 @@ const categories = ref([
   'English',
   'Piano',
 ]);
-
 
 const formatTimeAgo = (date) => {
   const now = new Date();
@@ -86,9 +93,9 @@ const formatTimeAgo = (date) => {
 // タブ切り替え用の関数を追加
 const switchTab = async (newTab) => {
   activeTab.value = newTab;
-  notes.value = [];  // ノートをリセット
-  page.value = 0;    // ページをリセット
-  selectedTags.value = [];
+  // notes.value = [];  // ノートをリセット
+  // page.value = 1;    // ページをリセット
+  // selectedTags.value = [];
 
   if (newTab === 'explore') {
     // エクスプロアタブの初期化
@@ -96,9 +103,11 @@ const switchTab = async (newTab) => {
     selectedCategory.value = 'Career';
     await loadVideosByCategory(selectedCategory.value);
   } else {
-    // マイノートタブの初期化
-    notes.value = [];
     selectedTags.value = [];
+    router.get(
+    route('notes.index'),
+    { tags: selectedTags.value },
+    );
     await loadMoreNotes();
   }
 };
@@ -142,18 +151,55 @@ const setupInfiniteScroll = () => {
   }
 };
 
+// const loadMoreNotes = async () => {
+//   if (isLoading.value || !hasMore.value) return;
+
+//   isLoading.value = true;
+//   page.value += 1;
+//   try {
+//     const params = new URLSearchParams({
+//       page: page.value,
+//       tab: activeTab.value,
+//       tags: JSON.stringify(selectedTags.value),
+//       category: activeTab.value === 'explore' ? selectedCategory.value : ''
+//     });
+
+//     const response = await fetch(`/api/notes?${params}`);
+    
+//     if (!response.ok) {
+//       throw new Error(`HTTP error! status: ${response.status}`);
+//     }
+
+//     const result = await response.json();
+//     console.log(result.notes);
+//     if (result.notes && Array.isArray(result.notes) && result.notes.length > 0) {
+//       notes.value = Array.isArray(notes.value) 
+//         ? [...notes.value, ...result.notes]
+//         : result.notes;
+
+//       hasMore.value = result.current_page < result.last_page;
+//     } else {
+//       hasMore.value = false;
+//     }
+//   } catch (error) {
+//     console.error('Failed to load more notes:', error);
+//     hasMore.value = false;
+//   } finally {
+//     isLoading.value = false;
+//   }
+// };
 
 // Reset data when filters change
-const resetData = () => {
-  notes.value = [];
-  page.value = 1;
-  hasMore.value = true;
-  loadMoreNotes();
-};
+// const resetData = () => {
+//   notes.value = [];
+//   page.value = 1;
+//   hasMore.value = true;
+//   loadMoreNotes();
+// };
 
 // Watch for filter changes
-watch(selectedTags, resetData);
-watch(activeTab, resetData);
+// watch(selectedTags, resetData);
+// watch(activeTab, resetData);
 
 watch(loadingElement, (newVal) => {
   if (newVal && observer.value) {
@@ -179,12 +225,12 @@ const handleEditClick = (note) => {
   showEditModal.value = true;
 };
 
-const handleDeleteNote = (noteId) => {
-  router.delete(`/notes/${noteId}`, {
+const handleDeleteNote = (note_id) => {
+  router.delete(`/notes/${note_id}`, {
     preserveScroll: true,
     onSuccess: () => {
       // ノート一覧を更新
-      notes.value = notes.value.filter(note => note.id !== noteId);
+      notes.value = notes.value.filter(note => note.id !== note_id);
     }
   });
 };
@@ -194,6 +240,25 @@ const closeEditModal = () => {
   selectedNote.value = null;
   editMode.value = null;
 };
+
+// const handleNoteUpdate = (updatedNote) => {
+
+//     if (!updatedNote || !updatedNote.id) {
+//         console.warn('Invalid updated note received:', updatedNote);
+//         return;
+//     }
+    
+//     // 現在の表示中のノートリストを更新
+//     notes.value = notes.value.map(note => 
+//       note.id === updatedNote.id 
+//         ? { 
+//             ...note, 
+//             ...updatedNote,
+
+//           } 
+//         : note
+//     );
+// };
 
 // タグ更新用の関数
 const refreshTags = () => {
@@ -437,10 +502,10 @@ const createNote = () => {
             </div>
 
             <div class="transition-opacity duration-300">
-              <div v-if="displayedNotes.length"
+              <div v-if="notes.length"
                 class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
                 <div 
-                  v-for="note in displayedNotes"
+                  v-for="note in notes"
                   :key="note.id"
                   @click="showNote(note)"
                   class="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
@@ -460,6 +525,7 @@ const createNote = () => {
                         <h3 class="text-md font-medium text-gray-900 mb-1">{{ note.title }}</h3>
                         <NoteMenuDropdown
                           :note="note"
+                          :showDeleteodal="showDeleteModal"
                           @edit="() => handleEditClick(note)"
                           @delete="handleDeleteNote"
                         />
