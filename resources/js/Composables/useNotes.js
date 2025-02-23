@@ -48,6 +48,16 @@ export function useNotes(initialNotes, pagination, filters) {
         }
     };
 
+    const handleDeleteNote = (note_id) => {
+        router.delete(`/notes/${note_id}`, {
+          preserveScroll: true,
+          onSuccess: () => {
+            // ノート一覧を更新
+            notes.value = notes.value.filter(note => note.id !== note_id);
+          }
+        });
+      };
+
     const handleNoteUpdate = (updatedNote) => {
         if (!updatedNote?.id) {
             console.warn('Invalid updated note received:', updatedNote);
@@ -64,5 +74,5 @@ export function useNotes(initialNotes, pagination, filters) {
         loadMoreNotes();
     });
 
-    return { notes, isLoading, hasMore, selectedTags, page, loadMoreNotes, deleteNote, handleNoteUpdate };
+    return { notes, isLoading, hasMore, selectedTags, page, loadMoreNotes, deleteNote, handleNoteUpdate, handleDeleteNote };
 }

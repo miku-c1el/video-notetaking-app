@@ -37,23 +37,14 @@ const props = defineProps({
 });
 
 // Notes Logic
-const { notes, isLoading, hasMore, selectedTags, page, loadMoreNotes, handleNoteUpdate } = useNotes(props.initialNotes, props.pagination, props.filters);
-
-// const { notes, displayedNotes, isLoading, hasMore, loadMoreNotes, deleteNote, handleNoteUpdate } = useNotes(props.initialNotes, props.pagination, props.filters);
-
-
+const { notes, isLoading, hasMore, selectedTags, page, loadMoreNotes, handleNoteUpdate, handleDeleteNote } = useNotes(props.initialNotes, props.pagination, props.filters);
 
 // 共通の状態
 const activeTab = ref('my-notes');
-// const isLoading = ref(false);
-// const page = ref(props.pagination.current_page || 0);
-// const hasMore = ref(props.pagination.has_more || false);
 const loadingElement = ref(null);
 
 // ノート関連の状態
-// const notes = ref(props.initialNotes?.data || []);
 const showFilterModal = ref(false);
-// const selectedTags = ref(props.filters?.tags || []);
 const showEditModal = ref(false);
 const showDeleteModal = ref(false);
 const selectedNote = ref(null);
@@ -151,43 +142,6 @@ const setupInfiniteScroll = () => {
   }
 };
 
-// const loadMoreNotes = async () => {
-//   if (isLoading.value || !hasMore.value) return;
-
-//   isLoading.value = true;
-//   page.value += 1;
-//   try {
-//     const params = new URLSearchParams({
-//       page: page.value,
-//       tab: activeTab.value,
-//       tags: JSON.stringify(selectedTags.value),
-//       category: activeTab.value === 'explore' ? selectedCategory.value : ''
-//     });
-
-//     const response = await fetch(`/api/notes?${params}`);
-    
-//     if (!response.ok) {
-//       throw new Error(`HTTP error! status: ${response.status}`);
-//     }
-
-//     const result = await response.json();
-//     console.log(result.notes);
-//     if (result.notes && Array.isArray(result.notes) && result.notes.length > 0) {
-//       notes.value = Array.isArray(notes.value) 
-//         ? [...notes.value, ...result.notes]
-//         : result.notes;
-
-//       hasMore.value = result.current_page < result.last_page;
-//     } else {
-//       hasMore.value = false;
-//     }
-//   } catch (error) {
-//     console.error('Failed to load more notes:', error);
-//     hasMore.value = false;
-//   } finally {
-//     isLoading.value = false;
-//   }
-// };
 
 // Reset data when filters change
 // const resetData = () => {
@@ -225,16 +179,6 @@ const handleEditClick = (note) => {
   showEditModal.value = true;
 };
 
-const handleDeleteNote = (note_id) => {
-  router.delete(`/notes/${note_id}`, {
-    preserveScroll: true,
-    onSuccess: () => {
-      // ノート一覧を更新
-      notes.value = notes.value.filter(note => note.id !== note_id);
-    }
-  });
-};
-
 const closeEditModal = () => {
   showEditModal.value = false;
   selectedNote.value = null;
@@ -266,7 +210,7 @@ const refreshTags = () => {
         getTags();
     }
     getTags().then(() => {
-        Inertia.reload({ only: ['notes'] });
+        router.reload({ only: ['notes'] });
     });
 };
 
