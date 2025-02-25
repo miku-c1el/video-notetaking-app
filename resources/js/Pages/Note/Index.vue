@@ -177,31 +177,31 @@ const getTags = async () => {
 
 <template>
   <Layout>
-    <div class="min-h-screen bg-gray-50">
+    <div class="min-h-screen">
       <!-- メインコンテンツ -->
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- ナビゲーションタブ -->
         <div class="border-b border-gray-200 mb-6">
           <nav class="-mb-px flex space-x-8">
             <button
-            @click="switchTab('explore')"
-            :class="[
+              @click="switchTab('explore')"
+              :class="[
+                'whitespace-nowrap pb-4 px-1 border-b-2 font-medium',
                 activeTab === 'explore'
-                ? 'border-orange-400 text-orange-400'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                'whitespace-nowrap pb-4 px-1 border-b-2 font-medium'
-            ]"
+                  ? 'border-primary text-primary-dark font-semibold'
+                  : 'border-transparent text-gray-500 hover:text-primary-dark hover:border-primary'
+              ]"
             >
             エクスプロア
             </button>
             <button
-            @click="switchTab('my-notes')"
-            :class="[
+              @click="switchTab('my-notes')"
+              :class="[
+                'whitespace-nowrap pb-4 px-1 border-b-2 font-medium',
                 activeTab === 'my-notes'
-                ? 'border-orange-400 text-orange-400'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                'whitespace-nowrap pb-4 px-1 border-b-2 font-medium'
-            ]"
+                  ? 'border-primary text-primary-dark font-semibold'
+                  : 'border-transparent text-gray-500 hover:text-primary-dark hover:border-primary'
+              ]"
             >
             自分のノート
             </button>
@@ -214,7 +214,7 @@ const getTags = async () => {
           <template v-if="activeTab === 'explore'">
             <!-- カテゴリー選択 -->
             <div class="mb-6">
-              <h2 class="text-xl font-bold text-gray-900 mb-4">おすすめ動画</h2>
+              <h2 class="text-l text-primary-dark mb-4 font-bold">おすすめ動画</h2>
               <div class="flex flex-wrap gap-3">
                 <button
                   v-for="category in categories"
@@ -223,8 +223,8 @@ const getTags = async () => {
                   :class="[
                     'px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200',
                     selectedCategory === category
-                      ? 'bg-blue-900 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-primary-dark text-white'
+                      : 'bg-primary-light text-gray-600 hover:bg-primary'
                   ]"
                 >
                   {{ category }}
@@ -240,7 +240,7 @@ const getTags = async () => {
                   v-for="video in videos" 
                   :key="video.id" 
                   @click="openModal(video)"
-                  class="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
+                  class="group bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden"
                 >
                   <!-- サムネイル -->
                   <div class="relative aspect-video overflow-hidden">
@@ -330,16 +330,12 @@ const getTags = async () => {
           <!-- マイノートタブのコンテンツ -->
           <template v-else>
             <!-- 既存のノート一覧コード -->
-            <div class="flex justify-between items-center mb-4">
-              <!-- <div 
-              v-if="activeTab === 'my-notes'"
-              class="flex justify-between items-center mb-4"
-              > -->
-              <div class="text-sm text-gray-500">{{ props.noteCount }} 項目</div>
+            <div class="flex sm:justify-end justify-center items-center mb-4">
+              <!-- <div class="text-sm text-gray-500">{{ props.noteCount }} 項目</div> -->
                 <div class="flex items-center space-x-4">
                   <button 
                     @click="showFilterModal = true" 
-                    class="text-gray-600 flex items-center">
+                    class="text-primary-dark flex items-center px-4 py-2 rounded-md bg-primary-light font-semibold">
                       <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
                       </svg>
@@ -381,7 +377,7 @@ const getTags = async () => {
                   <div class="p-4">
                     <!-- ノート情報 -->
                     <div class="flex justify-between items-start">
-                        <h3 class="text-md font-medium text-gray-900 mb-1">{{ note.title }}</h3>
+                        <h3 class="text-md font-semibold text-gray-900 mb-2 mr-1">{{ note.title }}</h3>
                         <NoteMenuDropdown
                           :note="note"
                           :showDeleteodal="showDeleteModal"
@@ -389,8 +385,9 @@ const getTags = async () => {
                           @delete="handleDeleteNote"
                         />
                     </div>
-                    <div class="text-sm text-gray-500 mb-2">
-                    {{ formatTimeAgo(note.created_at) }}
+
+                    <div class="text-sm text-gray-500 mb-3">
+                      {{ formatTimeAgo(note.created_at) }}
                     </div>
 
                     <!-- 関連タグ一覧 -->
@@ -425,7 +422,7 @@ const getTags = async () => {
             class="flex justify-center items-center py-4 min-h-[100px]"
             ref="loadingElement"
         >
-            <div v-if="isLoading" class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
+            <div v-if="isLoading" class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       </div>
       <!-- 編集モーダル -->

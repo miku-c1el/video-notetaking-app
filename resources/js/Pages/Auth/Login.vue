@@ -1,6 +1,6 @@
 <script setup>
 import Checkbox from '@/Components/Checkbox.vue';
-import GuestLayout from '@/Layouts/GuestLayout.vue';
+import LoginContainer from '@/Components/LoginContainer.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
@@ -30,58 +30,68 @@ const submit = () => {
 </script>
 
 <template>
-    <GuestLayout>
+    <div>
         <Head title="Log in" />
+        <LoginContainer :status="status">
+            <form @submit.prevent="submit" class="space-y-6">
+                <div class="space-y-4">
+                    <div>
+                        <InputLabel for="email" value="メールアドレス" class="text-sm font-medium text-[#2d2c38]" />
+                        <TextInput
+                            id="email"
+                            type="email"
+                            v-model="form.email"
+                            required
+                            autofocus
+                            autocomplete="username"
+                            class="mt-1 block w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-[#b2a6d9] focus:border-[#b2a6d9]"
+                        />
+                        <InputError class="mt-2" :message="form.errors.email" />
+                    </div>
 
-        <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
-            {{ status }}
-        </div>
+                    <div>
+                        <InputLabel for="password" value="パスワード" class="text-sm font-medium text-[#2d2c38]" />
+                        <TextInput
+                            id="password"
+                            type="password"
+                            v-model="form.password"
+                            required
+                            autocomplete="current-password"
+                            class="mt-1 block w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-[#b2a6d9] focus:border-[#b2a6d9]"
+                        />
+                        <InputError class="mt-2" :message="form.errors.password" />
+                    </div>
+                </div>
 
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="メールアドレス" />
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center">
+                        <Checkbox v-model="form.remember" class="rounded border-gray-300 text-[#b2a6d9] focus:ring-[#b2a6d9]" />
+                        <span class="ml-2 text-sm text-gray-600">Remember Me</span>
+                    </label>
 
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autofocus
-                    autocomplete="username"
-                />
+                    <Link
+                        v-if="canResetPassword"
+                        :href="route('password.request')"
+                        class="text-sm text-[#b2a6d9] hover:text-[#2d2c38]"
+                    >
+                        パスワードを忘れた方
+                    </Link>
+                </div>
 
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
-
-            <div class="mt-4">
-                <InputLabel for="password" value="パスワード" />
-
-                <TextInput
-                    id="password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password"
-                    required
-                    autocomplete="current-password"
-                />
-
-                <InputError class="mt-2" :message="form.errors.password" />
-            </div>
-
-            <div class="flex items-center justify-end mt-4">
-                <Link
-                    v-if="canResetPassword"
-                    :href="route('password.request')"
-                    class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                <PrimaryButton
+                    class="w-full py-3 px-4 border border-transparent rounded-lg text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors flex justify-center items-center"
+                    :class="{ 'opacity-25': form.processing }"
+                    :disabled="form.processing"
                 >
-                    パスワードを忘れた方
-                </Link>
-
-                <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                     ログイン
                 </PrimaryButton>
-            </div>
-        </form>
-    </GuestLayout>
+
+                <div class="text-center mt-4">
+                    <Link :href="route('register')" class="text-[#b2a6d9] hover:text-[#2d2c38]">
+                        新規会員登録の方はこちら
+                    </Link>
+                </div>
+            </form>
+        </LoginContainer>
+    </div>
 </template>

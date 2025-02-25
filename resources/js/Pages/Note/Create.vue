@@ -138,7 +138,7 @@ const refreshTags = () => {
                     
                     <!-- 動画プレイヤーセクション - 固定 or スティッキー -->
                     <div 
-                        class="w-full bg-white transition-all"
+                        class="w-full bg-red transition-all"
                         :class="{
                             'fixed top-0 left-0 w-full z-50': isMobile,
                             'sticky top-0 z-100': !isMobile
@@ -159,11 +159,11 @@ const refreshTags = () => {
                     <div class="lg:flex-1 lg:overflow-y-auto">
                         <div class="bg-white">
                             <div class="p-4 lg:p-6">
-                                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                                    <h2 class="text-lg font-medium text-gray-900">{{ props.note?.title }}</h2>
+                                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                                    <h2 class="text-lg font-semibold text-primary-dark">{{ props.note?.title }}</h2>
                                     <button
                                         @click="isModalOpen = true"
-                                        class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-md transition-colors"
+                                        class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-primary-dark text-sm font-medium rounded-md transition-colors whitespace-nowrap"
                                     >
                                         詳細編集
                                     </button>
@@ -181,7 +181,7 @@ const refreshTags = () => {
                                     <span
                                         v-for="tag in tags" 
                                         :key="tag.id"
-                                        class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                                        class="px-3 py-1 bg-gray-100 text-primary-dark rounded-md text-sm"
                                     >
                                         # {{ tag.name }}
                                     </span>

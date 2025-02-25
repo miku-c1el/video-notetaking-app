@@ -279,7 +279,7 @@ watch(() => props.note, (newNote) => {
                             <div class="space-y-6">
                                 <!-- ノート名編集 -->
                                 <div>
-                                    <h4 class="text-base font-medium mb-3">ノートの名前を変更</h4>
+                                    <h4 class="text-base font-semibold mb-3">ノートの名前を変更</h4>
                                     <input
                                         type="text"
                                         v-model="title"
@@ -291,7 +291,7 @@ watch(() => props.note, (newNote) => {
 
                                 <!-- タグ編集 -->
                                 <div>
-                                    <h4 class="text-base font-medium mb-3">タグ</h4>
+                                    <h4 class="text-base font-semibold mb-3">タグ</h4>
                                     <!-- 既存のタグ表示 -->
                                     <div v-if="tags.length > 0" class="mb-4 flex flex-wrap gap-2">
                                         <div
@@ -299,7 +299,7 @@ watch(() => props.note, (newNote) => {
                                             :key="tag.id"
                                             class="bg-gray-100 px-3 py-2 rounded-lg text-base flex items-center gap-2"
                                         >
-                                            {{ tag.name }}
+                                            # {{ tag.name }}
                                             <button
                                                 @click="detachTag(tag.id)"
                                                 class="text-gray-500 hover:text-gray-700"
@@ -384,7 +384,7 @@ watch(() => props.note, (newNote) => {
                 
                 <div class="fixed inset-0 flex items-center justify-center p-4">
                     <DialogPanel class="w-full max-w-sm rounded bg-white p-6 shadow-xl">
-                        <DialogTitle class="text-lg font-medium mb-4">
+                        <DialogTitle class="text-lg font-semibold mb-4">
                             タグの削除
                         </DialogTitle>
                         
@@ -401,7 +401,7 @@ watch(() => props.note, (newNote) => {
                             </button>
                             <button
                                 @click="handleDelete"
-                                class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                                class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-light hover:text-primary-dark"
                             >
                                 削除
                             </button>

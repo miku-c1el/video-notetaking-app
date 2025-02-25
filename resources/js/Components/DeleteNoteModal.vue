@@ -31,7 +31,7 @@ const handleDelete = () => {
       
       <div class="fixed inset-0 flex items-center justify-center p-4 z-[200]">
         <DialogPanel class="w-full max-w-sm rounded bg-white p-6 shadow-xl">
-          <DialogTitle class="text-lg font-medium mb-4">
+          <DialogTitle class="text-lg font-semibold mb-4">
             ノートの削除
           </DialogTitle>
           
@@ -48,7 +48,7 @@ const handleDelete = () => {
             </button>
             <button
               @click="handleDelete"
-              class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-light hover:text-primary-dark"
             >
               削除
             </button>

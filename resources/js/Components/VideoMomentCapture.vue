@@ -59,7 +59,7 @@ const createMoment = async () => {
   }
 };
 
-// 取得したモーメントがすでに存在するか確認
+// 取得したスナップがすでに存在するか確認
 const existsMoment = (currentTime) => {
   return moments.value.some(moment => moment.timestamp === Math.round(currentTime));
 };
@@ -72,7 +72,7 @@ const showDuplicateWarning = () => {
   }, 3000);
 };
 
-// モーメントのデバウンス処理
+// スナップのデバウンス処理
 let updateTimeout;
 const updateMoment = async (moment) => {
   if (updateTimeout) {
@@ -134,9 +134,9 @@ const jumpToTimestamp = (timestamp) => {
         v-if="showDuplicateAlert"
         class="fixed top-4 right-4 z-50 animate-in fade-in slide-in-from-top duration-300"
       >
-        <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4 shadow-lg">
-          <p class="text-yellow-800">
-            このタイムスタンプにはすでにモーメントが存在します
+        <div class="bg-primary-light border border-primary rounded-md p-4 shadow-lg">
+          <p class="text-primary-dark">
+            このタイムスタンプにはすでにスナップが存在します
           </p>
         </div>
       </div>
@@ -153,11 +153,11 @@ const jumpToTimestamp = (timestamp) => {
           <div class="fixed inset-0 flex items-center justify-center p-4 z-[200]">
             <DialogPanel class="w-full max-w-sm rounded bg-white p-6 shadow-xl">
               <DialogTitle class="text-lg font-medium mb-4">
-                モーメントの削除
+                スナップの削除
               </DialogTitle>
               
               <p class="mb-4">
-                このモーメントを削除してもよろしいですか？
+                このスナップを削除してもよろしいですか？
               </p>
               
               <div class="flex justify-end gap-3">
@@ -169,7 +169,7 @@ const jumpToTimestamp = (timestamp) => {
                 </button>
                 <button
                   @click="handleDelete"
-                  class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                  class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-light hover:text-primary-dark"
                 >
                   削除
                 </button>
@@ -179,20 +179,24 @@ const jumpToTimestamp = (timestamp) => {
         </div>
       </Dialog>
 
-      <div class="p-4 lg:p-6 bg-gray-50">
+      <div class="p-4 lg:p-6 bg-background">
         <div class="flex justify-between items-center">
-          <h2 class="text-lg font-semibold">モーメント ({{ moments.length }})</h2>
+          <h2 class="text-lg font-semibold">スナップ ({{ moments.length }})</h2>
           <button
               @click="createMoment"
-              class="px-4 py-2 bg-coral-500 text-black rounded-md hover:bg-coral-600"
+              class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-light hover:text-primary-dark inline-flex items-center"
           >
-              モーメントをキャプチャ
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+              <span class="ml-2 text-m hidden md:inline font-semibold">スナップを作成</span>
           </button>
         </div>
       </div>
 
-      <!-- モーメント一覧 -->
-      <div class="lg:flex-1 lg:overflow-y-auto px-6">
+      <!-- スナップ一覧 -->
+      <div class="lg:flex-1 lg:overflow-y-auto px-6 bg-background flex flex-col">
         <template v-if="moments.length > 0">
           <Card 
               v-for="moment in moments" 
@@ -203,7 +207,7 @@ const jumpToTimestamp = (timestamp) => {
             <div class="flex justify-between items-start mb-2">
               <button
                 @click="jumpToTimestamp(moment.timestamp)"
-                class="p-1 hover:bg-gray-100 rounded"
+                class="p-1 hover:bg-gray-100 rounded-full bg-primary-light px-3"
               >
                 {{ formatTimestamp(moment.timestamp) }}
               </button>
@@ -233,8 +237,9 @@ const jumpToTimestamp = (timestamp) => {
           </Card>
           <div class="mb-6"></div>
         </template>
-        <div v-else class="flex items-center justify-center h-32">
-          <p class="text-gray-500">まだモーメントがありません。</p>
+        <div v-else class="flex flex-col items-center justify-center flex-grow min-h-[400px]">
+          <img src="../../../public/images/favorite_snap.svg" alt="Inspod" class="h-24 md:h-32 w-auto mb-2 md:mb-0 md:mr-3" />
+          <p class="text-gray-500 text-sm md:text-base">まだスナップがありません。</p>
         </div>
       </div>
     </div>

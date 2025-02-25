@@ -55,7 +55,7 @@ onBeforeUnmount(() => {
   <div class="relative" ref="dropdownRef">
     <button
       @click="isOpen = !isOpen"
-      class="text-gray-600 hover:text-gray-900 focus:outline-none flex items-center"
+      class=" px-4 py-2 rounded-md bg-primary-light text-primary-dark focus:outline-none flex items-center font-semibold"
     >
       {{ selectedOption.label }}
       <svg 
@@ -78,7 +78,7 @@ onBeforeUnmount(() => {
         :key="option.value"
         @click="selectOption(option)"
         class="w-full px-4 py-2 text-left hover:bg-gray-50"
-        :class="{ 'text-orange-500': selectedOption.value === option.value }"
+        :class="{ 'text-primary font-semibold': selectedOption.value === option.value }"
       >
         {{ option.label }}
       </button>
