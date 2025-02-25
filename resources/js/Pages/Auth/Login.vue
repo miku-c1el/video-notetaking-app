@@ -44,20 +44,20 @@ const submit = () => {
                             required
                             autofocus
                             autocomplete="username"
-                            class="mt-1 block w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-[#b2a6d9] focus:border-[#b2a6d9]"
+                            class="mt-1 block w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary"
                         />
                         <InputError class="mt-2" :message="form.errors.email" />
                     </div>
 
                     <div>
-                        <InputLabel for="password" value="パスワード" class="text-sm font-medium text-[#2d2c38]" />
+                        <InputLabel for="password" value="パスワード" class="text-sm font-medium text-primary-dark" />
                         <TextInput
                             id="password"
                             type="password"
                             v-model="form.password"
                             required
                             autocomplete="current-password"
-                            class="mt-1 block w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-[#b2a6d9] focus:border-[#b2a6d9]"
+                            class="mt-1 block w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary"
                         />
                         <InputError class="mt-2" :message="form.errors.password" />
                     </div>
@@ -65,21 +65,21 @@ const submit = () => {
 
                 <div class="flex items-center justify-between">
                     <label class="flex items-center">
-                        <Checkbox v-model="form.remember" class="rounded border-gray-300 text-[#b2a6d9] focus:ring-[#b2a6d9]" />
+                        <Checkbox v-model="form.remember" class="rounded border-gray-300 text-primary focus:ring-primary" />
                         <span class="ml-2 text-sm text-gray-600">Remember Me</span>
                     </label>
 
                     <Link
                         v-if="canResetPassword"
                         :href="route('password.request')"
-                        class="text-sm text-[#b2a6d9] hover:text-[#2d2c38]"
+                        class="text-sm text-primary hover:text-[#2d2c38]"
                     >
                         パスワードを忘れた方
                     </Link>
                 </div>
 
                 <PrimaryButton
-                    class="w-full py-3 px-4 border border-transparent rounded-lg text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors flex justify-center items-center"
+                    class="w-full py-3 px-4 border border-transparent rounded-lg text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-0 focus:border-gray-200 focus:shadow-none transition-colors flex justify-center items-center"
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
                 >
@@ -87,7 +87,7 @@ const submit = () => {
                 </PrimaryButton>
 
                 <div class="text-center mt-4">
-                    <Link :href="route('register')" class="text-[#b2a6d9] hover:text-[#2d2c38]">
+                    <Link :href="route('register')" class="text-primary hover:text-primary-dark">
                         新規会員登録の方はこちら
                     </Link>
                 </div>
