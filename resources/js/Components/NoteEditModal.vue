@@ -32,6 +32,7 @@ const showTagEditModal = ref(false);
 const selectedTagForEdit = ref(null);
 const showDeleteConfirm = ref(false);
 const tagToDelete = ref(null);
+const selectedIndex = ref(-1);
 
 // 選択済みタグを除外した検索結果
 const filteredSearchResults = computed(() => {
@@ -97,7 +98,6 @@ const searchTags = debounce(async (query) => {
 
 const createTag = async () => {
     if (!tagInput.value || isDuplicateTag.value) return;
-    
     try {
         router.post(route('tags.store'), {
             name: tagInput.value,
@@ -111,6 +111,7 @@ const createTag = async () => {
                 emit('tag-updated');
             }
         });
+
     } catch (error) {
         console.error('Error creating tag:', error);
     }
@@ -237,6 +238,44 @@ watch(() => props.note, (newNote) => {
         title.value = newNote.title || '';
     }
 });
+
+const handleKeyDown = (event) => {
+    if (!showDropdown.value) return;
+    
+    switch (event.key) {
+        case 'ArrowDown':
+            event.preventDefault();
+            selectedIndex.value = Math.min(
+                selectedIndex.value + 1, 
+                filteredSearchResults.value.length + (isDuplicateTag.value ? 0 : 1) - 1
+            );
+            break;
+        case 'ArrowUp':
+            event.preventDefault();
+            selectedIndex.value = Math.max(selectedIndex.value - 1, -1);
+            break;
+        case 'Enter':
+            event.preventDefault();
+            if (selectedIndex.value === -1) {
+                // 選択がない場合は入力された文字列でタグを作成
+                if (!isDuplicateTag.value && tagInput.value.trim()) {
+                    createTag();
+                }
+            } else if (selectedIndex.value < filteredSearchResults.value.length) {
+                // 既存のタグを選択
+                handleTagSelect(filteredSearchResults.value[selectedIndex.value]);
+            } else {
+                // 「作成」ボタンを選択
+                createTag();
+            }
+            break;
+        case 'Escape':
+            event.preventDefault();
+            showDropdown.value = false;
+            selectedIndex.value = -1;
+            break;
+    }
+};
 </script>
 
 <template>
@@ -313,6 +352,7 @@ watch(() => props.note, (newNote) => {
                                         <input
                                             type="text"
                                             v-model="tagInput"
+                                            @keydown="handleKeyDown"
                                             placeholder="タグを追加"
                                             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 border-gray-200 focus:outline-none focus:ring-0 focus:border-gray-200 focus:shadow-none text-base p-3"
                                         >
@@ -323,9 +363,12 @@ watch(() => props.note, (newNote) => {
                                         >
                                             <div v-if="filteredSearchResults.length > 0">
                                                 <div
-                                                    v-for="tag in filteredSearchResults"
+                                                    v-for="(tag, index) in filteredSearchResults"
                                                     :key="tag.id"
-                                                    class="px-4 py-3 hover:bg-gray-50 flex items-center justify-between group"
+                                                    :class="[
+                                                        'px-4 py-3 hover:bg-gray-50 flex items-center justify-between group',
+                                                        selectedIndex === index ? 'bg-gray-100' : ''
+                                                    ]"
                                                 >
                                                     <button
                                                         @click="handleTagSelect(tag)"
@@ -352,7 +395,11 @@ watch(() => props.note, (newNote) => {
                                             <button
                                                 v-if="!isDuplicateTag"
                                                 @click="createTag"
-                                                class="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 text-base"
+                                                v-on:keyup.enter="createTag"
+                                                class="[
+                                                    'w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 text-base',
+                                                    selectedIndex === filteredSearchResults.length ? 'bg-gray-100' : ''
+                                                ]"
                                             >
                                                 <PlusIcon class="w-5 h-5" />
                                                 <span>「{{ tagInput }}」を作成</span>

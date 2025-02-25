@@ -81,6 +81,9 @@ const applyFilters = () => {
               # {{ tag.name }}
             </button>
           </div>
+          <div v-if="availableTags.length === 0" class="flex justify-center">
+            <p class="text-sm text-gray-500">まだタグがありません</p>
+          </div>
         </div>
 
         <!-- フッター -->

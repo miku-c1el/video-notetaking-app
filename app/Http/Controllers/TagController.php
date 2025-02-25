@@ -32,7 +32,8 @@ class TagController extends Controller
     {
         $query = $request->get('query');
         
-        $tags = Tag::where('name', 'like', "%{$query}%")
+        $tags = Tag::where('user_id', auth()->id())
+            ->where('name', 'like', "%{$query}%")
             ->take(5)
             ->get();
 
@@ -45,7 +46,7 @@ class TagController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:tags',
+            'name' => 'required|string|max:255',
             'note_id' => 'required|exists:notes,id'
         ]);
 

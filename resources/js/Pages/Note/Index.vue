@@ -168,6 +168,7 @@ const getTags = async () => {
         const response = await axios.get(route('tags.index'), {
             params: { note_id: selectedNote.value.id }
         });
+        console.log(response.data.tags);
         selectedNote.value.tags = response.data.tags;
     } catch (error) {
         console.error("Failed to fetch tags:", error);
@@ -309,7 +310,7 @@ const getTags = async () => {
                   <div class="flex justify-center items-center mb-4">
                     <button 
                       @click="createNote"
-                      class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
+                      class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors bg-primary text-white rounded-md hover:bg-primary-light hover:text-primary-dark"
                     >
                       <svg 
                         xmlns="http://www.w3.org/2000/svg" 
@@ -407,11 +408,11 @@ const getTags = async () => {
               <div v-else class="text-center py-12">
                 <div class="text-gray-400 mb-2">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v6m3-3H9m-4 8h14a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v14a1 1 0 001 1z" />
                   </svg>
                 </div>
                 <p class="text-gray-600 text-lg">まだノートがありません</p>
-                <p class="text-gray-400 mt-1">右上のノート作成ボタンからノートを作成してください</p>
+                <p class="text-gray-400 mt-1">右上の動画検索からお気に入りの動画を検索しましょう！</p>
               </div>
             </div>
           </template>
