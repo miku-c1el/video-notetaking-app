@@ -130,7 +130,7 @@ class NoteController extends Controller
         );
 
         $note = Note::create([
-            'title' => $video['title'],
+            'title' => trim(strip_tags($video['title'])),
             'user_id' => auth()->id(),
             'youtubeVideo_id' => $video['videoId'],
             'thumbnail' => $video['thumbnail'],

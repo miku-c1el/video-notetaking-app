@@ -57,8 +57,15 @@ require __DIR__.'/auth.php';
 |--------------------------------------------------------------------------
 */
 
+// 動画関連
 Route::get('/videos', [VideoController::class, 'index'])->name('videos.index');
 Route::get('/explore/videos', [ExploreVideoController::class, 'index'])->name('exploreVideos.index');
+Route::get('/quota-exceeded', function () {
+    return Inertia::render('Errors/QuotaExceeded');
+})->name('quota.exceeded');
+Route::get('/test-quota-exceeded', function () {
+    return redirect()->route('quota.exceeded')->with('message', 'これはテストメッセージです。');
+});
 
 // note関連
 Route::middleware(['auth'])->group(function () {

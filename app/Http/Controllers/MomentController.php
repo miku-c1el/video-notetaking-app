@@ -44,10 +44,6 @@ class MomentController extends Controller
             'moment' => $moment,
             'timestamp' => $timestamp
         ]);
-        // return Inertia::location(route('notes.show', [
-        //     'noteId' => $note_id,
-        //     'timestamp' => $timestamp
-        // ]));
     }
 
     /**

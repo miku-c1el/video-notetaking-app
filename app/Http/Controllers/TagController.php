@@ -30,7 +30,7 @@ class TagController extends Controller
 
     public function search(Request $request)
     {
-        $query = $request->get('query');
+        $query = trim(strip_tags($request->input('query', '')));
         
         $tags = Tag::where('user_id', auth()->id())
             ->where('name', 'like', "%{$query}%")
@@ -53,7 +53,7 @@ class TagController extends Controller
         $tag = Tag::where('name', $validated['name'])->where('user_id', Auth::id())->first();
 
         $tag = Tag::create([
-            'name' => $validated['name'],
+            'name' => trim(strip_tags($validated['name'])),
             'user_id' => Auth::id()
         ]);
 

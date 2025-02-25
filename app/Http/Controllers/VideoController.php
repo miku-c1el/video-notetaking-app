@@ -33,7 +33,14 @@ class VideoController extends Controller
                 $videos = $this->videoService->formatVideos($videos);
             
             } else {
-                $videos = $this->videoService->searchVideos($query);
+                try {
+                    $videos = $this->videoService->searchVideos($query);
+                } catch (\Exception $e) {
+                    if ($e->getCode() === 429) {
+                        return redirect()->route('quota.exceeded')->with('message', '検索リクエストの上限に達しました。しばらくしてからお試しください。');
+                    }
+                    $videos = [];
+                }
             }
 
         } else {
@@ -54,7 +61,18 @@ class VideoController extends Controller
             return response()->json(['error' => 'Search query is required'], 400);
         }
 
-        $videos = $this->videoService->searchVideos($query);
-        return response()->json($videos);
+        try {
+            $videos = $this->videoService->searchVideos($query);
+            return response()->json($videos);
+        } catch (\Exception $e) {
+            if ($e->getCode() === 429) {
+                return response()->json([
+                    'error' => 'quota_exceeded',
+                    'message' => '検索リクエストの上限に達しました。しばらくしてからお試しください。'
+                ], 429);
+            }
+            
+            return response()->json(['error' => 'Search failed'], 500);
+        }
     }
 }

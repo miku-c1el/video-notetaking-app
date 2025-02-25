@@ -36,6 +36,19 @@ class VideoService
                 'maxResults' => $maxResults,
             ]);
 
+            // クォータ超過エラーの検出（HTTP 403 + quotaExceeded）
+            if ($response->status() === 403) {
+                $body = $response->json();
+                if (isset($body['error']['errors'][0]['reason']) && 
+                    $body['error']['errors'][0]['reason'] === 'quotaExceeded') {
+                    Log::error('YouTube API quota exceeded', [
+                        'status' => $response->status(),
+                        'body' => $response->body()
+                    ]);
+                    throw new \Exception('YouTube API quota exceeded', 429);
+                }
+            }
+
             // レスポンスが成功したか確認
             if (!$response->successful()) {
                 Log::error('YouTube API error', [
@@ -64,8 +77,15 @@ class VideoService
         } catch (\Exception $e) {
             Log::error('Error in searchVideos', [
                 'error' => $e->getMessage(),
+                'code' => $e->getCode(),
                 'query' => $query
             ]);
+
+            // クォータ超過エラーを上位に伝播
+            if ($e->getCode() === 429) {
+                throw $e;
+            }
+            
             return [];
         }
     }
@@ -118,13 +138,4 @@ class VideoService
             'channelTitle' => $video['snippet']['channelTitle'],
         ];
     }
-
-//※ 返される値の例
-    // [{
-    //     "videoId": "yZt4ZOy6Z8c",
-    //     "title": "How to Find Your Purpose &amp; Design the Life You Want",
-    //     "publishedAt": "2025-01-23T10:01:04Z",
-    //     "thumbnail": "https://i.ytimg.com/vi/yZt4ZOy6Z8c/hqdefault.jpg",
-    //     "channelTitle": "Mel Robbins"
-    //     }]
 }
