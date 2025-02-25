@@ -2,23 +2,18 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { Link } from '@inertiajs/vue3'
 
-// ドロップダウンメニューの表示状態を管理
 const isDropdownOpen = ref(false)
 
-// ドロップダウンメニューの表示・非表示を切り替える
 const toggleDropdown = () => {
   isDropdownOpen.value = !isDropdownOpen.value
 }
 
-// ドロップダウンメニュー以外の場所をクリックした時にメニューを閉じる
 const closeDropdown = (e) => {
   if (!e.target.closest('.dropdown-container')) {
     isDropdownOpen.value = false
   }
 }
 
-// コンポーネントがマウントされたときにイベントリスナーを設定
-// コンポーネントがアンマウントされたときにイベントリスナーを削除
 onMounted(() => {
   document.addEventListener('click', closeDropdown)
 })
