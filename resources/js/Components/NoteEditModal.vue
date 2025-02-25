@@ -285,7 +285,7 @@ watch(() => props.note, (newNote) => {
                                         v-model="title"
                                         @input="debouncedSaveTitle(title)"
                                         placeholder="ノート名を入力"
-                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-base p-3"
+                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 border-gray-200 focus:outline-none focus:ring-0 focus:border-gray-200 focus:shadow-none text-base p-3"
                                     >
                                 </div>
 
@@ -314,7 +314,7 @@ watch(() => props.note, (newNote) => {
                                             type="text"
                                             v-model="tagInput"
                                             placeholder="タグを追加"
-                                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-base p-3"
+                                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 border-gray-200 focus:outline-none focus:ring-0 focus:border-gray-200 focus:shadow-none text-base p-3"
                                         >
                                         <!-- 検索結果ドロップダウン -->
                                         <div
