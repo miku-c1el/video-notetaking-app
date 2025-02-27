@@ -27,7 +27,7 @@ class UserFactory extends Factory
             'username' => fake()->userName(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            'password' => bcrypt($this->generatePassword()),
             'remember_token' => Str::random(10),
             'avatar_path' => $this->faker->imageUrl(),
         ];
@@ -42,4 +42,15 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    private function generatePassword(): string
+    {
+        $lowercase = strtolower(fake()->randomLetter()); 
+        $uppercase = strtoupper(fake()->randomLetter()); 
+        $number = fake()->randomElement(range(1, 9)); 
+        $symbol = fake()->randomElement(['@', '#', '$', '%', '&', '*', '!']); 
+        $remaining = Str::random(4); 
+    
+        return str_shuffle($lowercase . $uppercase . $number . $symbol . $remaining);
+    }    
 }
