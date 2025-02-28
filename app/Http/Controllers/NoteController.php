@@ -135,7 +135,7 @@ class NoteController extends Controller
             'youtubeVideo_id' => $video['videoId'],
             'thumbnail' => $video['thumbnail'],
         ]);
-        // return Inertia::location(route('notes.show', ['note' => $note->id]));
+
         return redirect()->route('notes.show', ['note' => $note->id]);  
     }
 
@@ -171,6 +171,10 @@ class NoteController extends Controller
         $title = trim(strip_tags($request->input('title')));
 
         $note = Note::findOrFail($id);
+
+        if (auth()->id() !== $note->user_id) {
+            abort(403, '権限がありません');
+        }
         $note->title = $title;
         $note->save();
 
@@ -182,6 +186,10 @@ class NoteController extends Controller
      */
     public function destroy(string $id)
     {
+        $note = Note::findOrFail($id);
+
+        $this->authorize('delete', $note);
+
         Note::destroy($id);
         return redirect()->back();
     }
