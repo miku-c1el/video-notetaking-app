@@ -53,13 +53,15 @@ require __DIR__.'/auth.php';
 */
 
 // 動画関連
-Route::get('/videos', [VideoController::class, 'index'])->name('videos.index');
-Route::get('/explore/videos', [ExploreVideoController::class, 'index'])->name('exploreVideos.index');
-Route::get('/quota-exceeded', function () {
-    return Inertia::render('Errors/QuotaExceeded');
-})->name('quota.exceeded');
-Route::get('/test-quota-exceeded', function () {
-    return redirect()->route('quota.exceeded')->with('message', 'これはテストメッセージです。');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/videos', [VideoController::class, 'index'])->name('videos.index');
+    Route::get('/explore/videos', [ExploreVideoController::class, 'index'])->name('exploreVideos.index');
+    Route::get('/quota-exceeded', function () {
+        return Inertia::render('Errors/QuotaExceeded');
+    })->name('quota.exceeded');
+    Route::get('/test-quota-exceeded', function () {
+        return redirect()->route('quota.exceeded')->with('message', 'これはテストメッセージです。');
+    });
 });
 
 // note関連
@@ -100,17 +102,3 @@ Route::post('/notes/{note}/tags', [NoteTagController::class, 'store'])->name('no
 Route::post('/tags', [TagController::class, 'store'])->name('tags.store');
 Route::delete('/notes/{note}/tags/{tag}', [NoteTagController::class, 'destroy'])->name('notes.tags.destroy');
 Route::delete('/tags/{tag}', [TagController::class, 'destroy'])->name('tags.destroy');
-
-
-
-
-
-
-// routes/web.php
-// Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
-// Route::get('/notes/{note}', [NoteController::class, 'show'])->name('notes.show');
-
-
-
-// searchクエリお試し用
-Route::get('/youtube/search', [VideoService::class, 'searchVideos']);

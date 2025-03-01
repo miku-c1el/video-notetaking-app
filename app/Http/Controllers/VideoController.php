@@ -27,17 +27,19 @@ class VideoController extends Controller
 
         if (!empty($query)) {
             $videos_json = $this->cachedSearchResult->where('query', $query)->where('expires_at', '>=', Carbon::now('Asia/Tokyo'))->first();
-
+            
             if ($videos_json) {
                 $videos = json_decode($videos_json['result'], true);
                 $videos = $this->videoService->formatVideos($videos);
-            
+
             } else {
                 try {
                     $videos = $this->videoService->searchVideos($query);
                 } catch (\Exception $e) {
                     if ($e->getCode() === 429) {
-                        return redirect()->route('quota.exceeded')->with('message', '検索リクエストの上限に達しました。しばらくしてからお試しください。');
+                        return Inertia::render('Errors/QuotaExceeded', [
+                            'message' => '検索リクエストの上限に達しました。しばらくしてからお試しください。'
+                        ]);
                     }
                     $videos = [];
                 }
@@ -46,7 +48,7 @@ class VideoController extends Controller
         } else {
             $videos = [];
         }
-
+        
         return Inertia::render('Video/Search', [
             'videos' => $videos,
             'query' => $query
