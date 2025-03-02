@@ -18,6 +18,7 @@ return new class extends Migration
             $table->datetimes();
             $table->foreign('note_id')->references('id')->on('notes')->onUpdate('cascade')->onDelete('cascade');
             $table->foreign('tag_id')->references('id')->on('tags')->onUpdate('cascade')->onDelete('cascade');
+            $table->unique(['note_id', 'tag_id']);
         });
     }
 

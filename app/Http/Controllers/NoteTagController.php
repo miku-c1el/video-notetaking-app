@@ -24,7 +24,13 @@ class NoteTagController extends Controller
             'tag_id' => 'required|exists:tags,id'
         ]);
 
-        $note->tags()->syncWithoutDetaching($validated['tag_id']);
+        try {
+            $note->tags()->syncWithoutDetaching([$validated['tag_id']]);
+        } catch (QueryException $e) {
+            if ($e->getCode() == 23000) {
+                return redirect()->back()->with('error', 'This tag is already attached to the note.');
+            }
+        }
 
         return redirect()->back();
     }

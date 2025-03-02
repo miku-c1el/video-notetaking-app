@@ -44,7 +44,7 @@ export function useNotes(initialNotes, pagination, filters) {
 
     const showNote = (note) => {
         router.get(route('notes.show', note.id), 
-              {noteId: note.id}
+              // {noteId: note.id}
           );
     };
 

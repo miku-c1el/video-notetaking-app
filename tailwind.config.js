@@ -21,6 +21,12 @@ export default {
                 'primary-dark': '#2d2c38',
                 'primary-light': '#ede8F5',
                 'background': '#f6f5f4',
+                'textBody': '#3d3c48',
+                'textMuted': '#666666',
+                'main': '#b2a6d9',
+                'dark': '#2d2c38',
+                'light': '#ede8F5',
+                'background': '#f6f5f4',
             }
         },
     },

@@ -1,6 +1,6 @@
 <script setup>
-import { ref, watch, computed } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { ref, watch, computed, watchEffect, nextTick} from 'vue';
+import { router} from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
 import TagEditModal from '@/Components/TagEditModal.vue';
 import {
@@ -33,6 +33,7 @@ const selectedTagForEdit = ref(null);
 const showDeleteConfirm = ref(false);
 const tagToDelete = ref(null);
 const selectedIndex = ref(-1);
+const isCheckingDuplicate = ref(true);
 
 // 選択済みタグを除外した検索結果
 const filteredSearchResults = computed(() => {
@@ -59,6 +60,14 @@ const isDuplicateTag = computed(() => {
     );
     
     return isDuplicateInSearch || isDuplicateInSelected;
+});
+
+watch([tagInput, searchResults, selectedTags], async () => {
+    isCheckingDuplicate.value = true;
+    
+    await nextTick(); // Wait for Vue to process updates
+    
+    isCheckingDuplicate.value = false;
 });
 
 // 検索結果の表示制御
@@ -393,10 +402,10 @@ const handleKeyDown = (event) => {
                                                 </div>
                                             </div>
                                             <button
-                                                v-if="!isDuplicateTag"
+                                                v-if="!isCheckingDuplicate && !isDuplicateTag"
                                                 @click="createTag"
                                                 v-on:keyup.enter="createTag"
-                                                class="[
+                                                :class="[
                                                     'w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 text-base',
                                                     selectedIndex === filteredSearchResults.length ? 'bg-gray-100' : ''
                                                 ]"

@@ -10,13 +10,14 @@ use Inertia\Inertia;
 use App\Models\Note;
 use App\Models\User;
 
-// Route::middleware(['auth'])->group(function () {
-//     Route::resource('notes', NoteController::class);
-// });
+Route::middleware(['auth'])->group(function () {
+    Route::get('/notes/index', [NoteController::class, 'index'])->name('notes.index');
+    Route::get('/api/notes', [NoteController::class, 'apiIndex']);
+    Route::patch('/notes/{note}', [NoteController::class, 'update'])->name('notes.update');
+    Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
+    Route::get('/notes/{note}', [NoteController::class, 'show'])->name('notes.show');
+    Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
+});
 
-// Route::get('/notes/{id}', [NoteController::class, 'index']);
-// Route::get('/videos/{video}', [VideoController::class, 'show'])->name('videos.show');
-// Route::post('/moments', [MomentController::class, 'store'])->name('moments.store');
 
-// モデル勉強
 

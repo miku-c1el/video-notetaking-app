@@ -168,7 +168,6 @@ const getTags = async () => {
         const response = await axios.get(route('tags.index'), {
             params: { note_id: selectedNote.value.id }
         });
-        console.log(response.data.tags);
         selectedNote.value.tags = response.data.tags;
     } catch (error) {
         console.error("Failed to fetch tags:", error);
@@ -364,7 +363,7 @@ const getTags = async () => {
                   v-for="note in notes"
                   :key="note.id"
                   @click="showNote(note)"
-                  class="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
+                  class="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer overflow-visible"
                 >
                   <!-- サムネイル -->
                   <div class="relative aspect-video overflow-hidden">

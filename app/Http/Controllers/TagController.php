@@ -52,13 +52,22 @@ class TagController extends Controller
 
         $tag = Tag::where('name', $validated['name'])->where('user_id', Auth::id())->first();
 
-        $tag = Tag::create([
+        $tag = Tag::updateOrCreate(
+        ['name' => trim(strip_tags($validated['name'])), 'user_id' => Auth::id()],
+        [
             'name' => trim(strip_tags($validated['name'])),
             'user_id' => Auth::id()
         ]);
 
         $note = Note::find($validated['note_id']);
-        $note->tags()->attach($tag->id);
+
+        try {
+            $note->tags()->syncWithoutDetaching([$tag->id]);
+        } catch (QueryException $e) {
+            if ($e->getCode() == 23000) {
+                return redirect()->back()->with('error', 'This tag is already attached to the note.');
+            }
+        }
 
         return redirect()->back();
     }

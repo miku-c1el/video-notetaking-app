@@ -33,7 +33,6 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 });
 
-
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -46,13 +45,14 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+
 /*
 |--------------------------------------------------------------------------
-| Youtube Routes
+|  video関連
 |--------------------------------------------------------------------------
 */
 
-// 動画関連
 Route::middleware(['auth'])->group(function () {
     Route::get('/videos', [VideoController::class, 'index'])->name('videos.index');
     Route::get('/explore/videos', [ExploreVideoController::class, 'index'])->name('exploreVideos.index');
@@ -64,39 +64,57 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-// note関連
+
+/*
+|--------------------------------------------------------------------------
+|  note関連
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/notes/index', [NoteController::class, 'index'])->name('notes.index');
     Route::get('/api/notes', [NoteController::class, 'apiIndex']);
     Route::patch('/notes/{note}', [NoteController::class, 'update'])->name('notes.update');
-
-    // 確認済み
     Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
     Route::get('/notes/{note}', [NoteController::class, 'show'])->name('notes.show');
     Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
 });
 
 
-// moment関連
+/*
+|--------------------------------------------------------------------------
+|  moment関連
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware(['auth'])->group(function () {
     Route::post('/moments', [MomentController::class, 'store'])->name('moments.store');
     Route::put('/moments/{moment}', [MomentController::class, 'update'])->name('moments.update');
     Route::delete('/moments/{moment}', [MomentController::class, 'destroy'])->name('moments.destroy');
-    // 確認済み
     Route::get('/moments', [MomentController::class, 'index'])->name('moments.index');
 });
 
+
+/*
+|--------------------------------------------------------------------------
+|  tag関連
+|--------------------------------------------------------------------------
+*/
 // tag関連
 Route::middleware(['auth'])->group(function () {
     Route::get('/tags', [TagController::class, 'index'])->name('tags.index');
 });
 
-// note tag 関連
+
+
+
+/*
+|--------------------------------------------------------------------------
+|  note_tag関連
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/api/tags/search', [TagController::class, 'search'])->name('api.tags.search');
-
-
-
-//使ってる
 Route::patch('/tags/{tag}', [TagController::class, 'update'])->name('tags.update');
 Route::post('/notes/{note}/tags', [NoteTagController::class, 'store'])->name('notes.tags.store');
 Route::post('/tags', [TagController::class, 'store'])->name('tags.store');
