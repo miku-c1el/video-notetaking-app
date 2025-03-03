@@ -30,6 +30,10 @@ class MomentController extends Controller
         $title = trim(strip_tags($request->input('title')));
         $content = trim(strip_tags($request->input('content')));
 
+        $note = Note::findOrFail($note_id);
+        
+        $this->authorize('create', [Moment::class, $note]);
+
         $moment = Moment::updateOrCreate(
             ['note_id' => $note_id, 'timestamp' => $timestamp],
             [
@@ -62,7 +66,7 @@ class MomentController extends Controller
         $title = trim(strip_tags($request->input('title')));
         $content = trim(strip_tags($request->input('content')));
         $moment = Moment::find($id);
-        
+        $this->authorize('update', $moment);
         $moment->title = $title;
         $moment->content = $content;
         $moment->save();
@@ -78,7 +82,8 @@ class MomentController extends Controller
     public function destroy(string $moment_id)
     {
         $moment = Moment::findOrFail($moment_id);
-        $note_id = $moment_id;
+        $this->authorize('delete', $moment);
         Moment::destroy($moment_id);
+        return redirect()->back();
     }
 }

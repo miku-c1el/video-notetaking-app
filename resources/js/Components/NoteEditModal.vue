@@ -12,6 +12,7 @@ import {
 } from '@headlessui/vue';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
+import axios from 'axios';
 
 const props = defineProps({
     modelValue: Boolean,
@@ -96,8 +97,8 @@ const searchTags = debounce(async (query) => {
     }
 
     try {
-        const response = await fetch(route('api.tags.search', { query }));
-        const data = await response.json();
+        const response = await axios.get(route('api.tags.search', { query }));
+        const data = await response.data;
         searchResults.value = data.tags;
     } catch (error) {
         console.error('Error searching tags:', error);

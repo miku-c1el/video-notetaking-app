@@ -7,25 +7,19 @@ import { TriangleAlert } from 'lucide-vue-next';
 const page = usePage();
 const message = page.props.flash && page.props.flash.message 
   ? page.props.flash.message 
-  : '検索リクエストの上限に達しました。しばらくしてからお試しください。';
+  : 'Something went wrong.';
 </script>
 
 <template>
     <AppLayout>
-        <Head title="検索制限" />
+        <Head title="Forbidden" />
 
         <div class="flex flex-col items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8">
             <div class="max-w-md w-full space-y-6 text-center">
                 <TriangleAlert class="w-16 h-16 text-primary-dark mx-auto" />
                 <div>
-                    <h1 class="text-3xl font-extrabold text-primary">検索制限に達しました</h1>
+                    <h1 class="text-3xl font-extrabold text-primary">Oops!</h1>
                     <p class="mt-4 text-lg text-gray-600">{{ message }}</p>
-                </div>
-                <div class="mt-8">
-                    <p class="text-gray-600 text-sm">
-                        エクスプロアタブの動画は引き続きご覧いただけます。
-                    </p>
-
                 </div>
                 <div class="mt-6">
                     <Link class="px-4 py-2 bg-primary rounded-md text-sm text-primary-light hover:text-primary-dark hover:bg-primary-light" :href="route('notes.index')">
@@ -34,6 +28,5 @@ const message = page.props.flash && page.props.flash.message
                 </div>
             </div>
         </div>
-
     </AppLayout>
 </template>

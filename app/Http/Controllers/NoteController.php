@@ -74,6 +74,10 @@ class NoteController extends Controller
 
     public function apiIndex(Request $request)
     {
+        if (!$request->ajax()) {
+            abort(403, 'Forbidden');
+        }
+
         try {
             $query = Note::where('user_id', auth()->id());
 
@@ -144,7 +148,14 @@ class NoteController extends Controller
      */
     public function show(string $id)
     {
-        $note = Note::findOrFail($id);
+        // try {
+            $note = Note::findOrFail($id);
+            $this->authorize('view', $note);
+
+        // } catch (\Exception $e) {
+        //     return abort(403);
+        // }
+
         $moments = Moment::where('note_id', $id)
             ->orderBy('timestamp', 'asc')
             ->get();
@@ -172,9 +183,8 @@ class NoteController extends Controller
 
         $note = Note::findOrFail($id);
 
-        if (auth()->id() !== $note->user_id) {
-            abort(403, '権限がありません');
-        }
+        $this->authorize('update', $note);
+
         $note->title = $title;
         $note->save();
 

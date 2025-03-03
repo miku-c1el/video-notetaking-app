@@ -12,10 +12,13 @@ class ExploreVideoController extends Controller
      */
     public function index(Request $request)
     {
+        if (!$request->expectsJson()) {
+            throw new AccessDeniedHttpException();
+        }
+
         $category = $request->input('category');
         $videos = ExploreVideo::where('category', $category)->get();
     
-        // Extract `video_resource` directly
         $formattedVideos = $videos->map(fn($video) => $video->video_resource, true);
     
         return response()->json([

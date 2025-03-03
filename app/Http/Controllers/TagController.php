@@ -30,6 +30,10 @@ class TagController extends Controller
 
     public function search(Request $request)
     {
+        if (!$request->ajax()) {
+            abort(403, 'Forbidden');
+        }
+        
         $query = trim(strip_tags($request->input('query', '')));
         
         $tags = Tag::where('user_id', auth()->id())
@@ -86,8 +90,8 @@ class TagController extends Controller
     public function update(Request $request, string $id)
     {
         $name = trim(strip_tags($request->input('name')));
-        
         $tag = Tag::findOrFail($id);
+        $this->authorize('update', $tag);
         $tag->name = $name;
         $tag->save();
 
@@ -98,7 +102,9 @@ class TagController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
-    {
+    {   
+        $tag = Tag::findOrFail($id);
+        $this->authorize('delete', $tag);
         Tag::destroy($id);
         return redirect()->back();
     }

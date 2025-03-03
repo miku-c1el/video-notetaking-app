@@ -56,12 +56,6 @@ require __DIR__.'/auth.php';
 Route::middleware(['auth'])->group(function () {
     Route::get('/videos', [VideoController::class, 'index'])->name('videos.index');
     Route::get('/explore/videos', [ExploreVideoController::class, 'index'])->name('exploreVideos.index');
-    Route::get('/quota-exceeded', function () {
-        return Inertia::render('Errors/QuotaExceeded');
-    })->name('quota.exceeded');
-    Route::get('/test-quota-exceeded', function () {
-        return redirect()->route('quota.exceeded')->with('message', 'これはテストメッセージです。');
-    });
 });
 
 
@@ -73,7 +67,7 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/notes/index', [NoteController::class, 'index'])->name('notes.index');
-    Route::get('/api/notes', [NoteController::class, 'apiIndex']);
+    Route::get('/api/notes', [NoteController::class, 'apiIndex'])->name('api.notes');
     Route::patch('/notes/{note}', [NoteController::class, 'update'])->name('notes.update');
     Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
     Route::get('/notes/{note}', [NoteController::class, 'show'])->name('notes.show');
@@ -106,17 +100,33 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
-
-
 /*
 |--------------------------------------------------------------------------
 |  note_tag関連
 |--------------------------------------------------------------------------
 */
+Route::middleware(['auth'])->group(function () {
+    Route::get('/api/tags/search', [TagController::class, 'search'])->name('api.tags.search');
+    Route::patch('/tags/{tag}', [TagController::class, 'update'])->name('tags.update');
+    Route::post('/notes/{note}/tags', [NoteTagController::class, 'store'])->name('notes.tags.store');
+    Route::post('/tags', [TagController::class, 'store'])->name('tags.store');
+    Route::delete('/notes/{note}/tags/{tag}', [NoteTagController::class, 'destroy'])->name('notes.tags.destroy');
+    Route::delete('/tags/{tag}', [TagController::class, 'destroy'])->name('tags.destroy');
+});
 
-Route::get('/api/tags/search', [TagController::class, 'search'])->name('api.tags.search');
-Route::patch('/tags/{tag}', [TagController::class, 'update'])->name('tags.update');
-Route::post('/notes/{note}/tags', [NoteTagController::class, 'store'])->name('notes.tags.store');
-Route::post('/tags', [TagController::class, 'store'])->name('tags.store');
-Route::delete('/notes/{note}/tags/{tag}', [NoteTagController::class, 'destroy'])->name('notes.tags.destroy');
-Route::delete('/tags/{tag}', [TagController::class, 'destroy'])->name('tags.destroy');
+/*
+|--------------------------------------------------------------------------
+|  ERROR関連
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
+    Route::get('/quota-exceeded', function () {
+        return Inertia::render('Errors/QuotaExceeded');
+    })->name('quota.exceeded');
+    Route::get('/test-quota-exceeded', function () {
+        return redirect()->route('quota.exceeded')->with('message', 'これはテストメッセージです。');
+    });
+    Route::get('/forbidden', function () {
+        return Inertia::render('Errors/Forbidden');
+    })->name('forbidden');
+});

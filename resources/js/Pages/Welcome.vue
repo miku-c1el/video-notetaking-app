@@ -33,65 +33,66 @@ import WelcomeLayout from '@/Layouts/WelcomeLayout.vue';
 
                 <!-- Japanese Section Title -->
                 <section class="py-16 text-center">
-                <h2 class="text-3xl font-bold text-primary-dark text-center mb-12 relative">
-                    <span class="inline-block relative">
-                        SnapScribeの特徴
-                        <span class="absolute bottom-0 left-0 w-full h-1 bg-primary"></span>
-                    </span>
-                </h2>
+                    <h2 class="text-3xl font-bold text-primary-dark text-center mb-12 relative">
+                        <span class="inline-block relative">
+                            SnapScribeの特徴
+                            <span class="absolute bottom-0 left-0 w-full h-1 bg-primary"></span>
+                        </span>
+                    </h2>
 
-                <!-- Feature Section 1 -->
-                <div class="container mx-auto px-4 mb-10 md:mb-5 lg:px-8 xl:px-12 lg:max-w-6xl xl:max-w-7xl">
-                    <div class="flex flex-col md:flex-row items-center justify-center gap-6">
-                        <div class="md:w-2/5 text-center md:text-left">
-                            <div class="flex flex-col md:flex-row items-center md:items-start mb-4">
-                                <!-- <div class="bg-primary h-12 w-12 rounded-full flex items-center justify-center mb-3 md:mb-0 md:mr-3">
-                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                    </svg>
-                                </div> -->
-                                <h2 class="text-2xl font-bold text-primary-dark">大事な瞬間を即キャプチャ</h2>
-                            </div>
-                            <p class="text-textMuted text-lg leading-relaxed">
-                                動画を見ながら、気になったシーンをスナップ＆メモ。<br>
-                                重要な学びや感動の瞬間をその場で記録できます。
-                            </p>
-                        </div>
-                        <div class="md:w-2/5 flex justify-center items-center">
-                            <img src="/images/timestamp.svg" alt="App screens" class="max-w-xs hover:opacity-90 transition-opacity" />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Feature Section 2 -->
-                <div class="container mx-auto px-4 mb-16 md:mb-12 lg:px-8 xl:px-12 lg:max-w-6xl xl:max-w-7xl">
-                    <div class="flex flex-col md:flex-row-reverse items-center justify-center gap-6">
-                        <div class="md:w-2/5 text-center md:text-left">
-                            <div class="flex flex-col md:flex-row items-center md:items-start mb-4">
-                                <div class="bg-primary h-12 w-12 rounded-full flex items-center justify-center mb-3 md:mb-0 md:mr-3">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
-                                    </svg>
+                    <!-- Feature Section 1 -->
+                    <div class="container mx-auto px-4 mb-10 md:mb-5 lg:px-8 xl:px-12 lg:max-w-6xl xl:max-w-7xl">
+                        <div class="flex flex-col md:flex-row items-center justify-center gap-6">
+                            <div class="md:w-2/5 text-center md:text-left">
+                                <div class="flex flex-col items-center md:items-center mb-4">
+                                    <div class="bg-primary h-12 w-12 rounded-full flex items-center justify-center mb-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <h2 class="text-2xl font-bold text-primary-dark">大事な瞬間を即キャプチャ</h2>
                                 </div>
-                                <h2 class="text-2xl font-bold text-primary-dark">ワンクリックで特定のシーンへ</h2>
+                                <p class="text-textMuted text-lg leading-relaxed">
+                                    動画を見ながら、気になったシーンをスナップ＆メモ。<br>
+                                    重要な学びや感動の瞬間をその場で記録できます。
+                                </p>
                             </div>
-                            <p class="text-textMuted text-lg leading-relaxed">
-                                保存したスナップをクリックするだけで、動画の該当シーンに即ジャンプ。<br>
-                                見直したい場面を探す手間がゼロに。
-                            </p>
-                        </div>
-                        <div class="md:w-2/5 flex justify-center items-center">
-                            <img src="/images/rewind.svg" alt="Person illustration" class="max-w-xs hover:opacity-90 transition-opacity" />
+                            <div class="md:w-2/5 flex justify-center items-center">
+                                <img src="/images/timestamp.svg" alt="App screens" class="max-w-xs hover:opacity-90 transition-opacity" />
+                            </div>
                         </div>
                     </div>
-                </div>
+
+                    <!-- Feature Section 2 -->
+                    <div class="container mx-auto px-4 mb-16 md:mb-12 lg:px-8 xl:px-12 lg:max-w-6xl xl:max-w-7xl">
+                        <div class="flex flex-col md:flex-row-reverse items-center justify-center gap-6">
+                            <div class="md:w-2/5 text-center md:text-left">
+                                <div class="flex flex-col items-center md:items-center mb-4">
+                                    <div class="bg-primary h-12 w-12 rounded-full flex items-center justify-center mb-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                                        </svg>
+                                    </div>
+                                    <h2 class="text-2xl font-bold text-primary-dark">ワンクリックで特定のシーンへ</h2>
+                                </div>
+                                <p class="text-textMuted text-lg leading-relaxed">
+                                    保存したスナップをクリックするだけで、動画の該当シーンに即ジャンプ。<br>
+                                    見直したい場面を探す手間がゼロに。
+                                </p>
+                            </div>
+                            <div class="md:w-2/5 flex justify-center items-center">
+                                <img src="/images/rewind.svg" alt="Person illustration" class="max-w-xs hover:opacity-90 transition-opacity" />
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Feature Section 3 -->
                     <div class="container mx-auto px-4 mb-12 lg:px-8 xl:px-12 lg:max-w-6xl xl:max-w-7xl">
                         <div class="flex flex-col md:flex-row items-center justify-center gap-6">
                             <div class="md:w-2/5 text-center md:text-left">
-                                <div class="flex flex-col md:flex-row items-center md:items-start mb-4">
-                                    <div class="bg-primary h-12 w-12 rounded-full flex items-center justify-center mb-3 md:mb-0 md:mr-3">
+                                <div class="flex flex-col items-center md:items-center mb-4">
+                                    <!-- アイコンをh2の上に配置 -->
+                                    <div class="bg-primary h-12 w-12 rounded-full flex items-center justify-center mb-3">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                                         </svg>
@@ -110,7 +111,7 @@ import WelcomeLayout from '@/Layouts/WelcomeLayout.vue';
                     </div>
                 </section>
 
-                <!-- Example Section -->
+                <!-- 使用例 Section -->
                 <section class="py-16 bg-primary-light">
                     <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
                         <h2 class="text-center mb-12 text-3xl font-bold text-primary-dark">
@@ -189,7 +190,6 @@ import WelcomeLayout from '@/Layouts/WelcomeLayout.vue';
                         >
                             <span class="bg-primary hover:bg-opacity-90 text-white font-medium px-8 py-3 rounded-md inline-block shadow-md transition">無料で試す</span>
                         </Link>
-                        <a href="#" class="bg-white border border-main text-main hover:bg-light font-medium px-8 py-3 rounded-md inline-block transition">詳細を見る</a>
                     </div>
                     </div>
                 </section>

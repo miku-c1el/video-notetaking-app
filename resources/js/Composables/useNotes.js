@@ -1,5 +1,6 @@
 import { ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
+import axios from 'axios';
 
 export function useNotes(initialNotes, pagination, filters) {
     const notes = ref(initialNotes?.data ?? []);
@@ -19,8 +20,7 @@ export function useNotes(initialNotes, pagination, filters) {
             tags: JSON.stringify(selectedTags.value),
           });
       
-          const response = await fetch(`/api/notes?${params}`);
-          
+          const response = await axios.get(`/api/notes?${params}`);
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }

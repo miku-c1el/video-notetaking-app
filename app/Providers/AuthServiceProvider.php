@@ -14,6 +14,8 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Note::class => NotePolicy::class,
+        Tag::class => TagPolicy::class,
+        Moment::class => MomentPolicy::class,
     ];
 
     /**

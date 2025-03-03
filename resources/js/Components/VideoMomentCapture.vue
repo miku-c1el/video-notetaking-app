@@ -1,5 +1,6 @@
 <script setup>
 import { router } from '@inertiajs/vue3';
+// import Inertia from '@inertiajs/inertia';
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { Trash2 } from 'lucide-vue-next';
 import { Card } from '@/Components/card';
@@ -55,7 +56,11 @@ const createMoment = async () => {
     }, 100);
 
   } catch (error) {
-    console.error('Failed to create moment:', error);
+    if (error.response && error.response.status === 403) {
+      router.visit('/forbidden');
+    } else {
+      console.error('Failed to create moment:', error);
+    }
   }
 };
 
@@ -86,7 +91,11 @@ const updateMoment = async (moment) => {
         content: moment.content
       });
     } catch (error) {
-      console.error('Failed to update moment:', error);
+      if (error.response && error.response.status === 403) {
+        router.visit('/forbidden');
+      } else {
+        console.error('Failed to create moment:', error);
+      }
     }
   }, 1000);
 };
@@ -109,7 +118,11 @@ const handleDelete = async () => {
     showDeleteConfirm.value = false;
     momentToDelete.value = null;
   } catch (error) {
-    console.error('Failed to delete moment:', error);
+    if (error.response && error.response.status === 403) {
+      router.visit('/forbidden');
+    } else {
+      console.error('Failed to create moment:', error);
+    }
   }
 };
 
