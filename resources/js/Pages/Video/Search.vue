@@ -12,6 +12,7 @@ const props = defineProps({
 const showModal = ref(false);
 const selectedVideo = ref(null);
 const searchQuery = ref(props.query || '');
+const confirmedInput = ref('');
 
 // 検索関連
 const executeSearch = () => {
@@ -22,7 +23,12 @@ const executeSearch = () => {
 
 const handleKeydown = (event) => {
     if (event.key === 'Enter') {
-        executeSearch();
+        if (confirmedInput.value === searchQuery.value.trim()) {
+            executeSearch();
+            confirmedInput.value = '';
+        } else {
+            confirmedInput.value = searchQuery.value.trim();
+        }
     }
 };
 

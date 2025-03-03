@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Models\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Providers\RouteServiceProvider;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
+
 
 class AuthenticatedSessionController extends Controller
 {
@@ -30,6 +32,12 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        $user = User::where('email', $request->input('email'))->first();
+
+        if (!$user) {
+            return redirect()->route('register')->with('error', 'Please create an account.');
+        }
+
         $request->authenticate();
 
         $request->session()->regenerate();

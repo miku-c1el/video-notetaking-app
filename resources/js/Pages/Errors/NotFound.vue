@@ -11,7 +11,7 @@ const message = page.props.flash && page.props.flash.message
 </script>
 
 <template>
-    <AppLayout>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Head title="Forbidden" />
 
         <div class="flex flex-col items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8">
@@ -28,5 +28,5 @@ const message = page.props.flash && page.props.flash.message
                 </div>
             </div>
         </div>
-    </AppLayout>
+    </div>
 </template>

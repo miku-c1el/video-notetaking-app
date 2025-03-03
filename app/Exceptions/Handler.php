@@ -7,6 +7,8 @@ use Throwable;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -46,14 +48,16 @@ class Handler extends ExceptionHandler
             return Inertia::render('Errors/NotFound')->toResponse($request)->setStatusCode(404);
         }
 
-        // if ($exception instanceof MethodNotAllowedHttpException) {
-        //     return Inertia::render('Errors/NotFound')->toResponse($request)->setStatusCode(404);
-        // }
+        if ($exception instanceof AuthenticationException) {
+            return redirect()->route('login')->withErrors(['email' => 'Invalid credentials.']);
+        }
 
-        // if ($exception instanceof NotFoundHttpException) {
-        //     return Inertia::render('Errors/NotFound')->toResponse($request)->setStatusCode(500);
-        // }
+        if ($exception instanceof ValidationException) {
+            return back()->withErrors($exception->errors())->withInput();
+        }
+
         return Inertia::render('Errors/Oops')->toResponse($request)->setStatusCode(500);
+
         // return parent::render($request, $exception);
     }
 }

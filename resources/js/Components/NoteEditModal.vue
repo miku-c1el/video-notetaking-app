@@ -271,23 +271,20 @@ const handleKeyDown = async (event) => {
             break;
         case 'Enter':
             event.preventDefault();
-            // If the user is selecting an existing tag, choose it
+
             if (selectedIndex.value >= 0 && selectedIndex.value < filteredSearchResults.value.length) {
                 handleTagSelect(filteredSearchResults.value[selectedIndex.value]);
                 return;
             }
 
-            // If the dropdown is showing the latest input, proceed with creating a tag
             if (confirmedInput.value === tagInput.value.trim()) {
                 createTag();
             } else {
-                // First press of Enter: confirm the latest input, update dropdown, but don't create the tag
                 confirmedInput.value = tagInput.value.trim();
             }
             break;
         case 'Escape':
             event.preventDefault();
-            // showDropdown.value = false;
             selectedIndex.value = -1;
             break;
     }
