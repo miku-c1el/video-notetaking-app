@@ -100,17 +100,12 @@ class VideoService
                     !isset($video['snippet']['publishedAt']) ||
                     !isset($video['snippet']['thumbnails']['high']['url']) ||
                     !isset($video['snippet']['channelTitle'])) {
-                    print($video['id']['videoId']);
-                    print('id: '. $video['id']['videoId']);
-                    print('title: '. $video['snippet']['title']);
-                    print('published_at : '. $video['snippet']['publishedAt']);
-                    print('thum: '. $video['snippet']['thumbnails']['high']['url']);
                     return null;
                 }
 
                 return [
                     'videoId' => $video['id']['videoId'],
-                    'title' => $video['snippet']['title'],
+                    'title' => htmlspecialchars_decode($video['snippet']['title']),
                     'publishedAt' => $video['snippet']['publishedAt'],
                     'thumbnail' => $video['snippet']['thumbnails']['high']['url'],
                     'channelTitle' => $video['snippet']['channelTitle'],
@@ -132,7 +127,7 @@ class VideoService
     {
         return [
             'videoId' => $video['id'],
-            'title' => $video['snippet']['title'],
+            'title' => htmlspecialchars_decode($video['snippet']['title']),
             'publishedAt' => $video['snippet']['publishedAt'],
             'thumbnail' => $video['snippet']['thumbnails']['high']['url'],
             'channelTitle' => $video['snippet']['channelTitle'],

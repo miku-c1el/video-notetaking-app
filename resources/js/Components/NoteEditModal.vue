@@ -13,6 +13,7 @@ import {
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import axios from 'axios';
+import { filter } from 'lodash';
 
 const props = defineProps({
     modelValue: Boolean,
@@ -26,6 +27,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'tag-updated', 'updated', 'close']);
 const title = ref(props.note?.title || '');
 const tagInput = ref('');
+const confirmedInput = ref('');
 const searchResults = ref([]);
 const selectedTags = ref(props.note?.tags || []);
 const isSearching = ref(false);
@@ -107,10 +109,11 @@ const searchTags = debounce(async (query) => {
 }, 300);
 
 const createTag = async () => {
-    if (!tagInput.value || isDuplicateTag.value) return;
+    const tagName = tagInput.value.trim();
+    if (!tagName || isDuplicateTag.value) return;
     try {
         router.post(route('tags.store'), {
-            name: tagInput.value,
+            name: tagName,
             note_id: props.note.id,
         }, {
             preserveState: true,
@@ -118,6 +121,7 @@ const createTag = async () => {
             onSuccess: () => {
                 tagInput.value = '';
                 isSearching.value = false;
+                confirmedInput.value = '';
                 emit('tag-updated');
             }
         });
@@ -173,6 +177,7 @@ const handleTagUpdate = async (newName) => {
         onSuccess: (response) => {
             showTagEditModal.value = false;
             selectedTagForEdit.value = null;
+            confirmedInput.value = '';
             emit('tag-updated');
             emit('updated', props.note);
             tagInput.value = '';
@@ -249,7 +254,7 @@ watch(() => props.note, (newNote) => {
     }
 });
 
-const handleKeyDown = (event) => {
+const handleKeyDown = async (event) => {
     if (!showDropdown.value) return;
     
     switch (event.key) {
@@ -266,22 +271,23 @@ const handleKeyDown = (event) => {
             break;
         case 'Enter':
             event.preventDefault();
-            if (selectedIndex.value === -1) {
-                // 選択がない場合は入力された文字列でタグを作成
-                if (!isDuplicateTag.value && tagInput.value.trim()) {
-                    createTag();
-                }
-            } else if (selectedIndex.value < filteredSearchResults.value.length) {
-                // 既存のタグを選択
+            // If the user is selecting an existing tag, choose it
+            if (selectedIndex.value >= 0 && selectedIndex.value < filteredSearchResults.value.length) {
                 handleTagSelect(filteredSearchResults.value[selectedIndex.value]);
-            } else {
-                // 「作成」ボタンを選択
+                return;
+            }
+
+            // If the dropdown is showing the latest input, proceed with creating a tag
+            if (confirmedInput.value === tagInput.value.trim()) {
                 createTag();
+            } else {
+                // First press of Enter: confirm the latest input, update dropdown, but don't create the tag
+                confirmedInput.value = tagInput.value.trim();
             }
             break;
         case 'Escape':
             event.preventDefault();
-            showDropdown.value = false;
+            // showDropdown.value = false;
             selectedIndex.value = -1;
             break;
     }
@@ -371,7 +377,7 @@ const handleKeyDown = (event) => {
                                             v-if="tagInput && showDropdown"
                                             class="absolute left-0 right-0 mt-2 bg-white border rounded-lg shadow-lg z-50 max-h-72 overflow-y-auto"
                                         >
-                                            <div v-if="filteredSearchResults.length > 0">
+                                            <div v-if="filteredSearchResults.length > 0" class="overflow-y-auto">
                                                 <div
                                                     v-for="(tag, index) in filteredSearchResults"
                                                     :key="tag.id"

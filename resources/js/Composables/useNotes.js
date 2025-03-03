@@ -20,20 +20,24 @@ export function useNotes(initialNotes, pagination, filters) {
             tags: JSON.stringify(selectedTags.value),
           });
       
-          const response = await axios.get(`/api/notes?${params}`);
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-      
-          const result = await response.json();
-          if (result.notes && Array.isArray(result.notes) && result.notes.length > 0) {
-            notes.value = Array.isArray(notes.value) 
-              ? [...notes.value, ...result.notes]
-              : result.notes;
-            hasMore.value = result.current_page < result.last_page;
-          } else {
+          try {
+            const response = await axios.get(`/api/notes?${params}`);
+            const result = await response.data;
+
+            if (result.notes && Array.isArray(result.notes) && result.notes.length > 0) {
+              notes.value = Array.isArray(notes.value) 
+                ? [...notes.value, ...result.notes]
+                : result.notes;
+              hasMore.value = result.current_page < result.last_page;
+            } else {
+              hasMore.value = false;
+            }
+
+          } catch (error) {
+            console.error("Failed to load more notes:", error);
             hasMore.value = false;
           }
+    
         } catch (error) {
           console.error('Failed to load more notes:', error);
           hasMore.value = false;
