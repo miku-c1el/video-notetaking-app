@@ -154,13 +154,16 @@ const closeEditModal = () => {
   editMode.value = null;
 };
 
-const refreshTags = () => {
-    if (selectedNote.value.id) {
-        getTags();
+const refreshTags = async () => {
+    if (!selectedNote.value.id) return;
+
+    try {
+        await getTags();  // Fetch updated tags first
+        handleNoteUpdate(selectedNote.value);  // Update the note with new tags
+        router.reload({ only: ['notes'] });  // Reload notes if needed
+    } catch (error) {
+        console.error("Failed to refresh tags:", error);
     }
-    getTags().then(() => {
-        router.reload({ only: ['notes'] });
-    });
 };
 
 const getTags = async () => {

@@ -148,13 +148,9 @@ class NoteController extends Controller
      */
     public function show(string $id)
     {
-        // try {
-            $note = Note::findOrFail($id);
-            $this->authorize('view', $note);
 
-        // } catch (\Exception $e) {
-        //     return abort(403);
-        // }
+        $note = Note::findOrFail($id);
+        $this->authorize('view', $note);
 
         $moments = Moment::where('note_id', $id)
             ->orderBy('timestamp', 'asc')
