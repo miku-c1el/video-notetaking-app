@@ -159,7 +159,7 @@ return [
         /*
          * Package Service Providers...
          */
-
+        Illuminate\View\ViewServiceProvider::class,
         /*
          * Application Service Providers...
          */
