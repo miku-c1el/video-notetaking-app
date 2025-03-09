@@ -96,7 +96,7 @@ const onYouTubeIframeAPIReady = () => {
 
 const getCurrentTime = () => {
     if (playerReady.value && player.value) {
-        return player.value.getCurrentTime();
+        return Math.floor(player.value.getCurrentTime());
     }
     return 0;
 };
