@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import Layout from '@/Layouts/AppLayout.vue';
-import { useForm, router } from '@inertiajs/vue3';
+import { useForm, router, Head } from '@inertiajs/vue3';
 import TagFilterModal from '@/Components/TagFilterModal.vue';
 import SortButton from '@/Components/SortButton.vue';
 import NoteMenuDropdown from '@/Components/NoteMenuDropdown.vue';
@@ -180,6 +180,7 @@ const getTags = async () => {
 
 <template>
   <Layout>
+    <Head title="ノート一覧" />
     <div class="min-h-screen">
       <!-- メインコンテンツ -->
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

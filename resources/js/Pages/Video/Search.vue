@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watchEffect } from 'vue';
 import Layout from '@/Layouts/AppLayout.vue';
-import { router } from '@inertiajs/vue3';
+import { router, Head } from '@inertiajs/vue3';
 import Modal from '@/Components/Modal.vue';
 
 const props = defineProps({
@@ -61,6 +61,7 @@ const createNote = () => {
 
 <template>
     <Layout>
+        <Head title="動画を検索" />
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- 検索フォーム -->
             <div class="mb-8 max-w-md mx-auto">

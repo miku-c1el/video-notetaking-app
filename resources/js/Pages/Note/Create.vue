@@ -5,6 +5,7 @@ import NoteEditModal from '@/Components/NoteEditModal.vue';
 import { ref, onMounted, watch, onUnmounted } from 'vue';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
+import NoteHead from '@/Components/NoteHead.vue';
 
 const props = defineProps({
     note: {
@@ -131,6 +132,7 @@ const refreshTags = () => {
 
 <template>
     <Layout>
+        <NoteHead :title="props.note.title" />
         <div class="h-full">
             <div class="sticky top-0 z-10 bg-white flex h-full flex-col lg:flex-row"> 
                 <!-- メインコンテンツ（動画＋タイトル） -->
