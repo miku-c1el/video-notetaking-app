@@ -84,6 +84,6 @@ class MomentController extends Controller
         $moment = Moment::findOrFail($moment_id);
         $this->authorize('delete', $moment);
         Moment::destroy($moment_id);
-        return redirect()->back();
+        return response()->json(['success' => true]);
     }
 }

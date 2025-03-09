@@ -121,7 +121,7 @@ const handleDelete = async () => {
     if (error.response && error.response.status === 403) {
       router.visit('/forbidden');
     } else {
-      console.error('Failed to create moment:', error);
+      console.error('Failed to delete moment:', error);
     }
   }
 };
