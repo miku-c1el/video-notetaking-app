@@ -7,5 +7,7 @@ YouTube動画での学びをタイムスタンプ付きで即座に記録し、�
 [SnapScribe](https://snapscribe.mikufolio.site/)
 
 ## 💡使用画面と機能一覧
+|トップページ|動画検索画面|
+|||
 
 
