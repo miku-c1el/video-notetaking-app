@@ -35,7 +35,6 @@ const submit = () => {
                             id="username"
                             type="text"
                             v-model="form.username"
-                            required
                             autofocus
                             autocomplete="name"
                             class="mt-1 block w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary"
